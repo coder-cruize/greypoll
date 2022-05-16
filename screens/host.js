@@ -1,10 +1,21 @@
-import { StyleSheet, Text, View, Button, TouchableOpacity } from 'react-native';
+import { StyleSheet, View} from 'react-native';
 import Tabs from './components/tabs';
+import PollList from './components/polllist';
+
+const pollData = {
+  title: 'Next Team Leader for GreyPoll.',
+  id: '3Zd7j48t',
+  count: 0,
+  accent: '#0F4FD7',
+  background: 'https://64.media.tumblr.com/e334f432080b67cef944eeefca5302af/tumblr_oiwytwMDKF1tf8vylo1_1280.pnj'
+}
+const list = [pollData, pollData, pollData, pollData, pollData, pollData, pollData]
 
 export default function Host({ navigation }) {
   return (
-    <View style={{ flex: 1, backgroundColor: '#1a1a1a' }}>
-      <Tabs hosting={true} control={navigation}/>
+    <View style={{ flex: 1, backgroundColor: '#1a1a1a'}}>
+      <Tabs hosting={true} control={navigation} />
+      <PollList datalist={list} />
     </View>
   );
 }

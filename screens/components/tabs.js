@@ -2,10 +2,10 @@ import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 
 export default function Tabs({ control, hosting }) {
   return (
-    <View style={{flexDirection: 'row', justifyContent: 'flex-start'}}>
+    <View style={styles.tabContainer}>
       <TouchableOpacity
         onPress={() => !hosting ? control.goBack() : null}
-        style={[styles.tabButton, hosting ? styles.tabActive : styles.tabInactive, { marginLeft: 15 }]}>
+        style={[styles.tabButton, hosting ? styles.tabActive : styles.tabInactive]}>
         <Text style={[styles.tabText, hosting ? styles.tabTextActive : styles.tabTextInactive]}>Host</Text>
       </TouchableOpacity>
       <TouchableOpacity
@@ -17,6 +17,11 @@ export default function Tabs({ control, hosting }) {
   );
 }
 const styles = StyleSheet.create({
+  tabContainer: {
+    flexDirection: 'row',
+    justifyContent: 'flex-start',
+    marginBottom: 20
+  },
   tabButton: {
     borderRadius: 25,
     borderColor: '#fff',
