@@ -1,15 +1,16 @@
 import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
+import * as navigation from './navigate'
 
-export default function Tabs({ control, hosting }) {
+export default function Tabs({ hosting }) {
   return (
     <View style={styles.tabContainer}>
       <TouchableOpacity
-        onPress={() => !hosting ? control.goBack() : null}
+        onPress={() => !hosting ? navigation.goBack() : null}
         style={[styles.tabButton, hosting ? styles.tabActive : styles.tabInactive]}>
         <Text style={[styles.tabText, hosting ? styles.tabTextActive : styles.tabTextInactive]}>Host</Text>
       </TouchableOpacity>
       <TouchableOpacity
-        onPress={() => hosting ? control.navigate('Join') : null}
+        onPress={() => hosting ? navigation.navigate('Join') : null}
         style={[styles.tabButton, !hosting ? styles.tabActive : styles.tabInactive]}>
         <Text style={[styles.tabText, !hosting ? styles.tabTextActive : styles.tabTextInactive]}>Join</Text>
       </TouchableOpacity>

@@ -1,2 +1,0 @@
-animation for each poll page
->> options={{...TransitionPresets.SlideFromRightIOS}}
