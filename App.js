@@ -9,6 +9,7 @@ import { Feather } from '@expo/vector-icons';
 import Host from './screens/host';
 import Join from './screens/join';
 import Vote from './screens/vote'
+import CreateForm from './screens/createform';
 import Settings from './screens/settings';
 import {navigationRef} from './screens/components/navigate';
 
@@ -71,31 +72,62 @@ export default function App() {
       <StatusBar style="light" translucent={true} />
       <Stack.Navigator
         screenOptions={({ navigation }) => ({
-          title: 'Hi, ' + user,
+          title: "Hi, " + user,
           headerRight: () => (
-            <TouchableOpacity style={{ marginRight: 15 }} onPress={() => navigation.navigate('Settings')}>
+            <TouchableOpacity
+              style={{ marginRight: 15 }}
+              onPress={() => navigation.navigate("Settings")}>
               <Feather name="settings" size={24} color="#fff" />
             </TouchableOpacity>
           ),
-          headerStyle: { backgroundColor: '#1a1a1a', elevation: 0, shadowOpacity: 0 },
-          headerTintColor: '#fff',
-          headerTitleStyle: { fontFamily: 'poppins' },
+          headerStyle: {
+            backgroundColor: "#1a1a1a",
+            elevation: 0,
+            shadowOpacity: 0,
+          },
+          headerTintColor: "#fff",
+          headerTitleStyle: { fontFamily: "poppins" },
           cardShadowEnabled: false,
-          ...TransitionPresets.ModalFadeTransition
+          ...TransitionPresets.ModalFadeTransition,
         })}>
-        <Stack.Screen name="Host" component={Host} initialParams={{polls: pollsx.hosted}} />
-        <Stack.Screen name="Join" component={Join} initialParams={{polls: polls.joined}} options={{ headerLeft: () => null }} />
-        <Stack.Screen name="Vote" component={Vote} options={{
-          title: '',
-          headerShown: false,
-          headerRight: () => null,
-          ...TransitionPresets.FadeFromBottomAndroid
-        }} />
-        <Stack.Screen name="Settings" component={Settings} options={{
-          title: 'Settings',
-          headerRight: () => null,
-          ...TransitionPresets.SlideFromRightIOS
-        }} />
+        <Stack.Screen
+          name="Host"
+          component={Host}
+          initialParams={{ polls: pollsx.hosted }}
+        />
+        <Stack.Screen
+          name="Join"
+          component={Join}
+          initialParams={{ polls: polls.joined }}
+          options={{ headerLeft: () => null }}
+        />
+        <Stack.Screen
+          name="Vote"
+          component={Vote}
+          options={{
+            title: "",
+            headerShown: false,
+            ...TransitionPresets.FadeFromBottomAndroid,
+          }}
+        />
+        <Stack.Screen
+          name="Create"
+          component={CreateForm}
+          options={{
+            title: "",
+            headerRight: () => null,
+            ...TransitionPresets.FadeFromBottomAndroid,
+          }}
+        />
+        <Stack.Screen
+          name="Settings"
+          component={Settings}
+          options={{
+            title: "Settings",
+            headerRight: () => null,
+            ...TransitionPresets.SlideFromRightIOS,
+          }}
+        />
       </Stack.Navigator>
     </NavigationContainer>
   );

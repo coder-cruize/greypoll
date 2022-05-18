@@ -1,29 +1,32 @@
-import { Modal as ModalBox, Text, TouchableOpacity, StyleSheet, View } from "react-native"
+import {
+  Modal as ModalBox,
+  StyleSheet,
+  View,
+} from "react-native";
 
-export default function Modal({show, onClose}) {
+export default function Modal(props) {
   return (
-    <ModalBox animationType="fade" transparent={true} visible={show} onRequestClose={onClose} statusBarTranslucent={true}>
-      <View style={styles.overlay}>  
-        <TouchableOpacity onPress={onClose}>
-          <Text style={styles.textStyle}>Hide Modal</Text>
-        </TouchableOpacity>
-      </View>
+    <ModalBox
+      animationType="fade"
+      transparent={true}
+      visible={props.show}
+      onRequestClose={props.close}
+      statusBarTranslucent={true}
+    >
+      <View style={styles.overlay}>{props.children}</View>
     </ModalBox>
-  )
+  );
 }
 
 const styles = StyleSheet.create({
   overlay: {
-    backgroundColor: '#000',
-    width: '100%',
-    height: '100%',
-    opacity: 0.7,
-    justifyContent: 'center',
-    alignItems: 'center'
+    backgroundColor: "rgba(0, 0, 0, 0.7)",
+    width: "100%",
+    height: "100%",
   },
   textStyle: {
-    color: 'white',
-    fontWeight: 'bold',
-    textAlign: 'center',
-  }
+    color: "white",
+    fontWeight: "bold",
+    textAlign: "center",
+  },
 });

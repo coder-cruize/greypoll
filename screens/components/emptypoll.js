@@ -1,5 +1,6 @@
-import { View, Text, StyleSheet, TouchableOpacity} from "react-native"
-import { SvgXml } from 'react-native-svg';
+import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { SvgXml } from "react-native-svg";
+import * as navigation from "./navigate";
 
 const noJoined = `
 <svg width="230" height="190" viewBox="0 0 230 190" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -38,7 +39,7 @@ const noJoined = `
 <path d="M84.8679 96.5405C88.5869 96.5405 91.6017 93.4908 91.6017 89.7288C91.6017 85.9668 88.5869 82.917 84.8679 82.917C81.149 82.917 78.1342 85.9668 78.1342 89.7288C78.1342 93.4908 81.149 96.5405 84.8679 96.5405Z" fill="#717081"/>
 <path d="M84.3065 92.7407L82.1693 89.9609L83.4122 88.983L84.424 90.299L87.8426 86.6488L88.986 87.7443L84.3065 92.7407Z" fill="white"/>
 </svg>
-`
+`;
 const noHosted = `
 <svg width="250" height="200" viewBox="0 0 250 200" fill="none" xmlns="http://www.w3.org/2000/svg">
 <g clip-path="url(#clip0_13_111)">
@@ -101,58 +102,68 @@ const noHosted = `
 </clipPath>
 </defs>
 </svg>
-`
+`;
 export default function EmptyPoll({ ishosting }) {
   const info = {
     image: ishosting ? noHosted : noJoined,
-    text: ishosting ? "You have not created any polls" : "You don't have any open polls.",
-    subText: ishosting ? "You've thought about it now get feedback from a new point of view." : "Let others know how you feel. Join a poll now and let your voice be heard.",
-    color: ishosting ? "#208110" : '#7F7BC7'
-  }
+    text: ishosting
+      ? "You have not created any polls"
+      : "You don't have any open polls.",
+    subText: ishosting
+      ? "You've thought about it now get feedback from a new point of view."
+      : "Let others know how you feel. Join a poll now and let your voice be heard.",
+    color: ishosting ? "#208110" : "#7F7BC7",
+  };
   return (
-    <View style={{justifyContent: 'center', alignItems: 'center', flex: 1}}>
-      <View style={{ marginBottom: 100, alignItems: 'center'}}>
+    <View style={{ justifyContent: "center", alignItems: "center", flex: 1 }}>
+      <View style={{ marginBottom: 100, alignItems: "center" }}>
         <SvgXml xml={info.image} />
         <Text style={styles.text}>{info.text}</Text>
         <Text style={styles.subText}>{info.subText}</Text>
         <View style={styles.overlay} />
-        <TouchableOpacity style={{...styles.button, backgroundColor: info.color}}><Text style={{fontFamily: 'poppins', color: '#f9f9f9'}}>{ ishosting ? 'Host': 'Join'}</Text></TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => navigation.navigate('Create', {a:'lekan'})}
+          style={{ ...styles.button, backgroundColor: info.color }}>
+          <Text style={{ fontFamily: "poppins", color: "#f9f9f9" }}>
+            {ishosting ? "Host" : "Join"}
+          </Text>
+        </TouchableOpacity>
       </View>
     </View>
-  )
+  );
 }
 
 var styles = StyleSheet.create({
   text: {
-    color: '#fff',
+    color: "#fff",
     marginTop: 20,
-    fontFamily: 'poppins',
+    fontFamily: "poppins",
     fontSize: 16,
-    textAlign: 'center'
+    textAlign: "center",
   },
   subText: {
     marginTop: 5,
-    color: '#8a8a8a',
-    fontFamily: 'montserratMid',
+    color: "#8a8a8a",
+    fontFamily: "montserratMid",
     fontSize: 14,
-    textAlign: 'center',
+    textAlign: "center",
     lineHeight: 20,
-    marginHorizontal: 15
+    marginHorizontal: 15,
   },
   button: {
     paddingHorizontal: 30,
     paddingVertical: 5,
     marginTop: 15,
-    borderRadius: 10
+    borderRadius: 10,
   },
   overlay: {
     flex: 1,
-    position: 'absolute',
+    position: "absolute",
     left: 0,
     top: 0,
     opacity: 0.3,
-    height: '100%',
-    width: '100%',
-    backgroundColor: '#1a1a1a',
-  }  
+    height: "100%",
+    width: "100%",
+    backgroundColor: "#1a1a1a",
+  },
 });
