@@ -1,21 +1,24 @@
-import { Text, View, ImageBackground, StatusBar, TouchableOpacity, StyleSheet } from "react-native";
+import { useState } from "react";
+import { Text, View, ImageBackground, StatusBar, TouchableOpacity, StyleSheet, Dimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { Dimensions } from 'react-native';
+import Modal from "./modal";
 import * as navigation from './navigate'
 
-export default function Header({data}){
+export default function Header({ data }) {
+  const [modal, setModal] = useState(false)
   return (
     <ImageBackground source={{ uri: data.background }} style={{ justifyContent: 'flex-end', width: Dimensions.get('window').width  }}>
       <View style={styles.buttons}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <Ionicons name="arrow-back-sharp" size={24} color="#fff" />
         </TouchableOpacity>
-        <View style={styles.tag}>
+        <TouchableOpacity style={styles.tag} onPress={() => setModal(true)}>
           <Text style={{...styles.tagSign, color: data.accent}}>#</Text>
           <Text style={styles.tagData}>{data.id}</Text>
-      </View>
+        </TouchableOpacity>
       </View>
       <Text style={styles.title}>{data.title}</Text>
+      <Modal show={modal} onClose={() => setModal(false)}/>
     </ImageBackground>
   )
 }
