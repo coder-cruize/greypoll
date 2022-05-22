@@ -6,15 +6,16 @@ import * as SplashScreen from 'expo-splash-screen'
 import { StatusBar } from 'expo-status-bar';
 import * as Font from 'expo-font'
 import { Feather } from '@expo/vector-icons';
-import Host from './screens/host';
-import Join from './screens/join';
+import Hosted from './screens/hosted';
+import Joined from './screens/joined';
 import Vote from './screens/vote'
-import CreateForm from './screens/createform';
+import HostPoll from './screens/hostPoll';
 import Settings from './screens/settings';
 import {navigationRef} from './screens/components/navigate';
 
 const Stack = createStackNavigator();
 export default function App() {
+  //todo remove pollsx 
   const [user, setUser] = useState('Lekan')
   const [pollsx, setPolls] = useState({ hosted: [], joined: []})
   const [fontLoaded, setFontLoaded] = useState(false)
@@ -92,12 +93,12 @@ export default function App() {
         })}>
         <Stack.Screen
           name="Host"
-          component={Host}
+          component={Hosted}
           initialParams={{ polls: pollsx.hosted }}
         />
         <Stack.Screen
           name="Join"
-          component={Join}
+          component={Joined}
           initialParams={{ polls: polls.joined }}
           options={{ headerLeft: () => null }}
         />
@@ -112,7 +113,7 @@ export default function App() {
         />
         <Stack.Screen
           name="Create"
-          component={CreateForm}
+          component={HostPoll}
           options={{
             title: "",
             headerRight: () => null,
