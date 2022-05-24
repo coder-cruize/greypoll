@@ -111,8 +111,7 @@ export default function App() {
           name="HostPoll"
           component={HostPoll}
           options={{
-            title: "",
-            headerRight: () => null,
+            headerShown: false,
             ...TransitionPresets.FadeFromBottomAndroid,
           }}
         />

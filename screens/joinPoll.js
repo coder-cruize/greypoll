@@ -15,24 +15,26 @@ import Content from "./components/content";
 import Modal from "./components/modal";
 import { Feather } from "@expo/vector-icons";
 
-function submitData(data, navigation) {
-  //todo generate poll id from firebase
+function submitData(data, navigation, isQr=false) {
   //todo handle firebase here
   console.log(data);
   setTimeout(() => {
-    navigation.navigate("Join");
+    navigation.goBack();
+    if (isQr) {
+      navigation.goBack();
+    }
   }, 5000);
   //todo handle incase submit data has error to remove loader
 }
 function Index({ navigation }) {
   const [joinId, setJoinID] = useState("");
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(false);
   const disabled = joinId.length < 5;
 
   const Done = () => {
-    setLoading(true)
+    setLoading(true);
     submitData(joinId, navigation);
-  }
+  };
 
   return (
     <Content
@@ -43,7 +45,7 @@ function Index({ navigation }) {
       <View style={styles.page}>
         <View style={styles.pageHeader}>
           <Text style={styles.pageHeaderText}>Join a </Text>
-          <Text style={{ ...styles.pageHeaderText, color: "#36ae22" }}>
+          <Text style={{ ...styles.pageHeaderText, color: "#726EC9" }}>
             Poll
           </Text>
         </View>
@@ -51,7 +53,7 @@ function Index({ navigation }) {
           <View style={styles.inputIcon}>
             <Text
               style={{
-                color: "#36ae22",
+                color: "#726EC9",
                 fontSize: 20,
                 fontFamily: "montserrat",
               }}>
@@ -87,14 +89,14 @@ function Index({ navigation }) {
           <TouchableOpacity
             style={styles.pageQrBtn}
             onPress={() => navigation.navigate("qr")}>
-            <Feather name="maximize" size={24} color="#36ae22" />
+            <Feather name="maximize" size={24} color="#726EC9" />
           </TouchableOpacity>
         </View>
       </View>
       <Modal show={loading}>
         <View
           style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-          <ActivityIndicator size="large" color="#36ae22" />
+          <ActivityIndicator size="large" color="#726EC9" />
         </View>
       </Modal>
     </Content>
@@ -121,8 +123,7 @@ function Qr({ navigation }) {
       data.startsWith("greypoll://")
     ) {
       setScanned(data);
-      console.log(data.replace("greypoll://#id:", ""));
-      submitData(data, navigation)
+      submitData(data.replace("greypoll://#id:", ""), navigation, true);
     }
     if (!data.startsWith("greypoll://")) {
       setScanned(false);
@@ -131,10 +132,15 @@ function Qr({ navigation }) {
 
   if (!cameraPermission) {
     return (
-      <Content style={{marginBottom: 50}}>
+      <Content style={{ marginBottom: 50 }}>
         <View
           style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-          <Feather name="camera-off" size={40} color="#36ae22" style={{marginBottom: 20}} />
+          <Feather
+            name="camera-off"
+            size={40}
+            color="#726EC9"
+            style={{ marginBottom: 20 }}
+          />
           <Text style={{ color: "#fff", fontFamily: "poppins", fontSize: 20 }}>
             Enable Camera
           </Text>
@@ -195,24 +201,24 @@ function Qr({ navigation }) {
                     scanned == null
                       ? "#fff"
                       : typeof scanned == "string"
-                      ? "green"
+                      ? "#726EC9"
                       : "red",
                   fontFamily: "poppins",
                 }}>
                 {scanned == null
                   ? "Scan a GreyPoll QR code"
                   : typeof scanned == "string"
-                  ? scanned
+                  ? "#" + scanned.replace("greypoll://#id:", "")
                   : "Invalid Qr code"}
               </Text>
             </View>
           </View>
         </View>
       </View>
-      <Modal show={typeof(scanned) == 'string'}>
+      <Modal show={typeof scanned == "string"}>
         <View
           style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-          <ActivityIndicator size="large" color="#36ae22" />
+          <ActivityIndicator size="large" color="#726EC9" />
         </View>
       </Modal>
     </Content>
@@ -305,7 +311,7 @@ const styles = StyleSheet.create({
   pageBtn: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#14500b",
+    backgroundColor: "#726EC9",
     paddingHorizontal: 50,
     paddingVertical: 10,
     borderRadius: 15,
