@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { TouchableOpacity, View, Image } from 'react-native';
+import { TouchableOpacity } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator, TransitionPresets } from '@react-navigation/stack';
 import * as SplashScreen from 'expo-splash-screen'
@@ -10,40 +10,36 @@ import Hosted from './screens/hosted';
 import Joined from './screens/joined';
 import Vote from './screens/vote'
 import HostPoll from './screens/hostPoll';
+import JoinPoll from "./screens/joinPoll";
 import Settings from './screens/settings';
 import {navigationRef} from './screens/components/navigate';
 
 const Stack = createStackNavigator();
 export default function App() {
-  //todo remove pollsx 
+  //todo might combine polls and user into one object
   const [user, setUser] = useState('Lekan')
-  const [pollsx, setPolls] = useState({ hosted: [], joined: []})
+  const [reload, setReload] = useState(false)
   const [fontLoaded, setFontLoaded] = useState(false)
-
-  const polls = {
+  const [polls, setPolls] = useState({
     hosted: [
       {
-        title: 'Next Team Leader for GreyPoll.',
-        id: '3Zd7j48t',
+        title: "Next Team Leader for GreyPoll.",
+        id: "3Zd7j48t",
         count: 0,
-        accent: '#0F4FD7',
-        background: 'https://64.media.tumblr.com/e334f432080b67cef944eeefca5302af/tumblr_oiwytwMDKF1tf8vylo1_1280.pnj'
-      }
+        accent: "#0F4FD7",
+        background:
+          "https://64.media.tumblr.com/e334f432080b67cef944eeefca5302af/tumblr_oiwytwMDKF1tf8vylo1_1280.pnj",
+      },
     ],
-    joined: [
-      {
-        title: 'Account Manager.',
-        id: '3Zd7j48t',
-        count: 0,
-        accent: '#514DEC',
-        background: 'https://64.media.tumblr.com/0bff8e408376825aed6f0aa1906e10da/tumblr_ndov148yd01tf8vylo1_1280.pnj'
-      }
-    ]
-  }
-
-
+    joined: [],
+  });
 
   useEffect(() => {
+    //todo load firebase data here
+    console.log('Async Firebase request here')
+  }, [reload])
+  useEffect(() => {
+    //load local files here
     async function prepareAssets() {
       await Font.loadAsync({
         poppins: require('./assets/fonts/Poppins-SemiBold.ttf'),
@@ -94,7 +90,7 @@ export default function App() {
         <Stack.Screen
           name="Host"
           component={Hosted}
-          initialParams={{ polls: pollsx.hosted }}
+          initialParams={{ polls: polls.hosted }}
         />
         <Stack.Screen
           name="Join"
@@ -112,11 +108,19 @@ export default function App() {
           }}
         />
         <Stack.Screen
-          name="Create"
+          name="HostPoll"
           component={HostPoll}
           options={{
             title: "",
             headerRight: () => null,
+            ...TransitionPresets.FadeFromBottomAndroid,
+          }}
+        />
+        <Stack.Screen
+          name="JoinPoll"
+          component={JoinPoll}
+          options={{
+            headerShown: false,
             ...TransitionPresets.FadeFromBottomAndroid,
           }}
         />

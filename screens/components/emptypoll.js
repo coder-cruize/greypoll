@@ -122,7 +122,7 @@ export default function EmptyPoll({ ishosting }) {
         <Text style={styles.subText}>{info.subText}</Text>
         <View style={styles.overlay} />
         <TouchableOpacity
-          onPress={() => navigation.navigate('Create', {a:'lekan'})}
+          onPress={() => navigation.navigate(ishosting ? "HostPoll" : "JoinPoll")}
           style={{ ...styles.button, backgroundColor: info.color }}>
           <Text style={{ fontFamily: "poppins", color: "#f9f9f9" }}>
             {ishosting ? "Host" : "Join"}
