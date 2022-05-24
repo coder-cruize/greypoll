@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState } from "react";
 import {
   Text,
   ScrollView,
@@ -7,7 +7,6 @@ import {
   StyleSheet,
   TouchableOpacity,
   Animated,
-  Keyboard,
   Dimensions,
   Easing,
 } from "react-native";
@@ -15,6 +14,7 @@ import { RadioButton, ActivityIndicator } from "react-native-paper";
 import Content from "./components/content";
 import Modal from "./components/modal";
 import { Feather } from "@expo/vector-icons";
+import { createStackNavigator } from "@react-navigation/stack";
 
 const ClickOption = ({ isActive = false, text, style, onPress }) => {
   return (
@@ -309,68 +309,82 @@ const Questions = ({ questions, setQuestions }) => {
   );
 };
 
-function Page1({ pageAnimations, GoToPage, submitData }) {
+function submitData(data, navigation) {
+  //todo generate poll id from firebase
+  //todo handle firebase here
+  console.log(data);
+  setTimeout(() => {
+    navigation.goBack()
+    navigation.goBack();
+  }, 5000);
+  //todo handle incase submit data has error to remove loader
+}
+
+function titlePage({ navigation }) {
   const [pollTitle, setPollTitle] = useState("");
   const disabled = pollTitle.length < 5;
   const Done = () => {
-    submitData(pollTitle);
-    GoToPage(1);
+    navigation.navigate("page2");
   };
   return (
-    <Animated.View
-      ref={pageAnimations.pageTransition.pageRef[0]}
-      visible={true}
-      style={{
-        ...styles.page,
-        opacity: pageAnimations.pageTransition.animationRef[0],
-        position: "relative",
-        zIndex: 999,
-      }}>
-      <View style={styles.pageHeader}>
-        <Text style={styles.pageHeaderText}>Create a </Text>
-        <Text style={{ ...styles.pageHeaderText, color: "#36ae22" }}>
-          Title
-        </Text>
-      </View>
-      <Text style={styles.pageSubText}>
-        Start by choosing a title for your poll.
-      </Text>
-      <TextInput
-        style={styles.input}
-        onChangeText={setPollTitle}
-        value={pollTitle}
-        placeholder="My First Poll"
-        placeholderTextColor="#363636"
-        keyboardType="default"
-        autoCapitalize="words"
-        maxLength={60}
-      />
-      <View style={styles.pageBtnContainer}>
-        <TouchableOpacity
-          onPress={Done}
-          disabled={disabled}
-          style={[styles.pageBtn, disabled ? styles.pageBtnDisabled : null]}>
-          <Text
-            style={[
-              styles.pageBtnText,
-              disabled ? styles.pageBtnTextDisabled : null,
-            ]}>
-            Next
+    <Content style={{ justifyContent: "center", alignItems: "center" }}>
+      <View style={styles.page}>
+        <View style={styles.pageHeader}>
+          <Text style={styles.pageHeaderText}>Create a </Text>
+          <Text style={{ ...styles.pageHeaderText, color: "#36ae22" }}>
+            Title
           </Text>
-        </TouchableOpacity>
+        </View>
+        <Text style={styles.pageSubText}>
+          Start by choosing a title for your poll.
+        </Text>
+        <TextInput
+          style={styles.input}
+          onChangeText={setPollTitle}
+          value={pollTitle}
+          placeholder="My First Poll"
+          placeholderTextColor="#363636"
+          keyboardType="default"
+          autoCapitalize="words"
+          maxLength={60}
+        />
+        <View style={styles.pageBtnContainer}>
+          <TouchableOpacity
+            onPress={Done}
+            disabled={disabled}
+            style={[styles.pageBtn, disabled ? styles.pageBtnDisabled : null]}>
+            <Text
+              style={[
+                styles.pageBtnText,
+                disabled ? styles.pageBtnTextDisabled : null,
+              ]}>
+              Next
+            </Text>
+          </TouchableOpacity>
+        </View>
       </View>
-    </Animated.View>
+    </Content>
   );
 }
-function Page2({ pageAnimations, GoToPage, submitData, completePoll }) {
+
+function questionsPage({ navigation }) {
   const [questionInput, setQuestionInput] = useState("");
   const [questions, setQuestions] = useState([]);
   const [options, setOptions] = useState([]);
   const [answerType, setAnswerType] = useState("textbox");
+  const [loading, setLoading] = useState(false)
+  const [pageAnimations] = useState({
+    showOptions: {
+      height: new Animated.Value(0),
+      opacity: new Animated.Value(0),
+    },
+    inputBox: new Animated.Value(0)
+  });
   const disabledQuestionBtn =
     questionInput.length < 5 ||
     (answerType == "multichoice" && options.length < 2);
   const disabledCreateBtn = questions.length < 1;
+  
   const showOptions = (starting, answertype) => {
     function Opening() {
       Animated.timing(pageAnimations.showOptions.height, {
@@ -432,26 +446,16 @@ function Page2({ pageAnimations, GoToPage, submitData, completePoll }) {
           options: answerType == "multichoice" ? options : null,
         },
       ]);
+      setQuestionInput('')
+      setOptions([])
     });
   };
-  useEffect(() => {
-    if (questions.length !== 0) {
-      submitData(questions);
-      setQuestionInput("");
-      setOptions([]);
-    }
-  }, [questions]);
+  const Done = () => {
+    setLoading(false)
+    submitData(questions, navigation)
+  }
   return (
-    <Animated.View
-      ref={pageAnimations.pageTransition.pageRef[1]}
-      style={{
-        flex: 1,
-        width: "100%",
-        opacity: pageAnimations.pageTransition.animationRef[1],
-        position: "absolute",
-        zIndex: -999,
-        alignItems: "center",
-      }}>
+    <Content style={{ justifyContent: "center", alignItems: "center" }}>
       <View style={{ ...styles.page, marginBottom: 0, flex: 1 }}>
         <View style={styles.pageHeader}>
           <Text style={styles.pageHeaderText}>Create your </Text>
@@ -525,17 +529,7 @@ function Page2({ pageAnimations, GoToPage, submitData, completePoll }) {
           <Questions questions={questions} setQuestions={setQuestions} />
           <View style={styles.bottomItemsBtnContainer}>
             <TouchableOpacity
-              onPress={() => GoToPage(0)}
-              style={[
-                styles.bottomItemsBtn,
-                { backgroundColor: "rgba(120, 0, 0, .1)" },
-              ]}>
-              <Text style={{ fontFamily: "montserratMid", color: "#780000" }}>
-                Back
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={completePoll}
+              onPress={Done}
               disabled={disabledCreateBtn}
               style={[
                 styles.bottomItemsBtn,
@@ -552,85 +546,6 @@ function Page2({ pageAnimations, GoToPage, submitData, completePoll }) {
           </View>
         </View>
       </View>
-    </Animated.View>
-  );
-}
-
-export default function HostPoll({ navigation }) {
-  const [currentPage, setCurrentPage] = useState(0);
-  const [questions, setQuestions] = useState([]);
-  const [pollTitle, setPollTitle] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [pageAnimations] = useState({
-    showOptions: {
-      height: new Animated.Value(0),
-      opacity: new Animated.Value(0),
-    },
-    inputBox: new Animated.Value(0),
-    pageTransition: {
-      pageRef: [useRef(), useRef()],
-      animationRef: [
-        useRef(new Animated.Value(1)).current,
-        useRef(new Animated.Value(0)).current,
-      ],
-    },
-  });
-
-  function GoToPage(id) {
-    const fade = (Out, In) => {
-      const setUp = { duration: 500, useNativeDriver: true };
-      Animated.timing(pageAnimations.pageTransition.animationRef[Out], {
-        toValue: 0,
-        ...setUp,
-      }).start(() => {
-        pageAnimations.pageTransition.pageRef[Out].current.setNativeProps({
-          position: "absolute",
-          zIndex: -999,
-        });
-        pageAnimations.pageTransition.pageRef[In].current.setNativeProps({
-          position: "relative",
-          zIndex: 999,
-        });
-        Animated.timing(pageAnimations.pageTransition.animationRef[In], {
-          toValue: 1,
-          ...setUp,
-        }).start();
-      });
-    };
-    Keyboard.dismiss();
-    if (currentPage != id) {
-      fade(currentPage, id);
-      setCurrentPage(id);
-    } else null;
-  }
-  function completePoll() {
-    setLoading(true);
-    console.log({
-      pollTitle: pollTitle,
-      questions: questions,
-    });
-    //todo Submit To Firebase
-    //todo when loading generate id from firebase
-    setLoading(false);
-    navigation.goBack();
-  }
-  return (
-    <Content
-      style={{
-        alignItems: "center",
-        justifyContent: "center",
-      }}>
-      <Page1
-        pageAnimations={pageAnimations}
-        GoToPage={GoToPage}
-        submitData={setPollTitle}
-      />
-      <Page2
-        pageAnimations={pageAnimations}
-        GoToPage={GoToPage}
-        submitData={setQuestions}
-        completePoll={completePoll}
-      />
       <Modal show={loading}>
         <View
           style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
@@ -638,6 +553,44 @@ export default function HostPoll({ navigation }) {
         </View>
       </Modal>
     </Content>
+  );
+}
+
+export default function HostPoll() {
+  const Stack = createStackNavigator();
+  const forFade = ({ current }) => ({
+    cardStyle: {
+      opacity: current.progress,
+    },
+  });
+  const config = {
+    animation: "timing",
+    config: {
+      duration: 600,
+    },
+  };
+  return (
+    <Stack.Navigator
+      screenOptions={{
+        title: "",
+        headerStyle: {
+          backgroundColor: "#1a1a1a",
+          elevation: 0,
+          shadowOpacity: 0,
+        },
+        headerTintColor: "#fff",
+        cardStyleInterpolator: forFade,
+        transitionSpec: {
+          open: config,
+          close: config,
+        },
+      }}>
+      <Stack.Screen name="page1" component={titlePage} />
+      <Stack.Screen
+        name="page2"
+        component={questionsPage}
+      />
+    </Stack.Navigator>
   );
 }
 
@@ -729,10 +682,13 @@ const styles = StyleSheet.create({
     justifyContent: "space-evenly",
   },
   bottomItemsBtn: {
-    width: "45%",
+    width: '60%',
+    minWidth: 150,
+    maxWidth: 300,
     alignItems: "center",
     paddingHorizontal: 20,
     paddingVertical: 10,
     borderRadius: 15,
   },
 });
+//todo add an alert before exiting to confirm discard
