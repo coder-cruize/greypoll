@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
-import { TouchableOpacity } from 'react-native';
+import { TouchableOpacity, View, Text } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator, TransitionPresets } from '@react-navigation/stack';
+import Toast from "react-native-toast-message";
 import * as SplashScreen from 'expo-splash-screen'
 import { StatusBar } from 'expo-status-bar';
 import * as Font from 'expo-font'
@@ -12,7 +13,8 @@ import Vote from './screens/vote'
 import HostPoll from './screens/hostPoll';
 import JoinPoll from "./screens/joinPoll";
 import Settings from './screens/settings';
-import {navigationRef} from './screens/components/navigate';
+import { navigationRef } from './screens/components/navigate';
+import { ToastConfig } from './screens/components/toastconfig';
 
 const Stack = createStackNavigator();
 export default function App() {
@@ -22,14 +24,14 @@ export default function App() {
   const [fontLoaded, setFontLoaded] = useState(false)
   const [polls, setPolls] = useState({
     hosted: [
-      {
-        title: "Next Team Leader for GreyPoll.",
-        id: "3Zd7j48t",
-        count: 0,
-        accent: "#0F4FD7",
-        background:
-          "https://64.media.tumblr.com/e334f432080b67cef944eeefca5302af/tumblr_oiwytwMDKF1tf8vylo1_1280.pnj",
-      },
+      // {
+      //   title: "Next Team Leader for GreyPoll.",
+      //   id: "3Zd7j48t",
+      //   count: 0,
+      //   accent: "#0F4FD7",
+      //   background:
+      //     "https://64.media.tumblr.com/e334f432080b67cef944eeefca5302af/tumblr_oiwytwMDKF1tf8vylo1_1280.pnj",
+      // },
     ],
     joined: [],
   });
@@ -61,6 +63,7 @@ export default function App() {
     }
     Loader()
   }, [])
+
   if (!fontLoaded) {
     return null
   }
@@ -133,6 +136,7 @@ export default function App() {
           }}
         />
       </Stack.Navigator>
+      <Toast config={ToastConfig} />
     </NavigationContainer>
   );
 }

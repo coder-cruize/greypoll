@@ -10,12 +10,13 @@ import {
 } from "react-native";
 import { createStackNavigator } from "@react-navigation/stack";
 import { ActivityIndicator } from "react-native-paper";
+import Toast from "react-native-toast-message";
 import { BarCodeScanner } from "expo-barcode-scanner";
 import Content from "./components/content";
 import Modal from "./components/modal";
 import { Feather } from "@expo/vector-icons";
 
-function submitData(data, navigation, isQr=false) {
+function submitData(data, navigation, isQr = false) {
   //todo handle firebase here
   console.log(data);
   setTimeout(() => {
@@ -23,6 +24,14 @@ function submitData(data, navigation, isQr=false) {
     if (isQr) {
       navigation.goBack();
     }
+    Toast.show({
+      type: "success",
+      text1: "Successfully joined Poll.",
+      position: "bottom",
+      bottomOffset: 30,
+      autoHide: true,
+      visibilityTime: 2000,
+    });
   }, 5000);
   //todo handle incase submit data has error to remove loader
 }

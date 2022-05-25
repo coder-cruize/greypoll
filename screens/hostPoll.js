@@ -9,12 +9,17 @@ import {
   Animated,
   Dimensions,
   Easing,
+  Alert,
 } from "react-native";
 import { RadioButton, ActivityIndicator } from "react-native-paper";
+import Toast from "react-native-toast-message";
 import Content from "./components/content";
 import Modal from "./components/modal";
 import { Feather } from "@expo/vector-icons";
-import { createStackNavigator } from "@react-navigation/stack";
+import {
+  createStackNavigator,
+  HeaderBackButton,
+} from "@react-navigation/stack";
 
 const ClickOption = ({ isActive = false, text, style, onPress }) => {
   return (
@@ -314,13 +319,21 @@ function submitData(data, navigation) {
   //todo handle firebase here
   console.log(data);
   setTimeout(() => {
-    navigation.goBack()
     navigation.goBack();
+    navigation.goBack();
+    Toast.show({
+      type: "success",
+      text1: "Successfully created Poll.",
+      position: "bottom",
+      bottomOffset: 30,
+      autoHide: true,
+      visibilityTime: 2000,
+    });
   }, 5000);
   //todo handle incase submit data has error to remove loader
 }
 
-function titlePage({ navigation }) {
+function TitlePage({ navigation }) {
   const [pollTitle, setPollTitle] = useState("");
   const disabled = pollTitle.length < 5;
   const Done = () => {
@@ -367,24 +380,24 @@ function titlePage({ navigation }) {
   );
 }
 
-function questionsPage({ navigation }) {
+function QuestionsPage({ navigation }) {
   const [questionInput, setQuestionInput] = useState("");
   const [questions, setQuestions] = useState([]);
   const [options, setOptions] = useState([]);
   const [answerType, setAnswerType] = useState("textbox");
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(false);
   const [pageAnimations] = useState({
     showOptions: {
       height: new Animated.Value(0),
       opacity: new Animated.Value(0),
     },
-    inputBox: new Animated.Value(0)
+    inputBox: new Animated.Value(0),
   });
   const disabledQuestionBtn =
     questionInput.length < 5 ||
     (answerType == "multichoice" && options.length < 2);
   const disabledCreateBtn = questions.length < 1;
-  
+
   const showOptions = (starting, answertype) => {
     function Opening() {
       Animated.timing(pageAnimations.showOptions.height, {
@@ -446,14 +459,14 @@ function questionsPage({ navigation }) {
           options: answerType == "multichoice" ? options : null,
         },
       ]);
-      setQuestionInput('')
-      setOptions([])
+      setQuestionInput("");
+      setOptions([]);
     });
   };
   const Done = () => {
-    setLoading(false)
-    submitData(questions, navigation)
-  }
+    setLoading(false);
+    submitData(questions, navigation);
+  };
   return (
     <Content style={{ justifyContent: "center", alignItems: "center" }}>
       <View style={{ ...styles.page, marginBottom: 0, flex: 1 }}>
@@ -569,6 +582,9 @@ export default function HostPoll() {
       duration: 600,
     },
   };
+  const confirmExit = () => {
+    alert("mme");
+  };
   return (
     <Stack.Navigator
       screenOptions={{
@@ -585,11 +601,8 @@ export default function HostPoll() {
           close: config,
         },
       }}>
-      <Stack.Screen name="page1" component={titlePage} />
-      <Stack.Screen
-        name="page2"
-        component={questionsPage}
-      />
+      <Stack.Screen name="page1" component={TitlePage} />
+      <Stack.Screen name="page2" component={QuestionsPage} />
     </Stack.Navigator>
   );
 }
@@ -682,7 +695,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-evenly",
   },
   bottomItemsBtn: {
-    width: '60%',
+    width: "60%",
     minWidth: 150,
     maxWidth: 300,
     alignItems: "center",
@@ -691,4 +704,3 @@ const styles = StyleSheet.create({
     borderRadius: 15,
   },
 });
-//todo add an alert before exiting to confirm discard
