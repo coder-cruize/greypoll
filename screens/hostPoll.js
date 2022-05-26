@@ -18,7 +18,6 @@ import Modal from "./components/modal";
 import { Feather } from "@expo/vector-icons";
 import {
   createStackNavigator,
-  HeaderBackButton,
 } from "@react-navigation/stack";
 
 const ClickOption = ({ isActive = false, text, style, onPress }) => {
