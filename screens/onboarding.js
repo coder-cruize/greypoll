@@ -276,8 +276,7 @@ const AuthTemplate = ({
             or {text.toLowerCase()} with
           </Text>
           <View style={styles.socials}>
-            <TouchableOpacity
-              style={styles.socialBtn}>
+            <TouchableOpacity style={styles.socialBtn}>
               <View style={{ width: 25, aspectRatio: 1 / 1 }}>
                 <Image
                   source={Google}
@@ -410,7 +409,15 @@ function Login({ navigation }) {
     setLoading(true);
     auth.email
       .login(email, password)
-      .then(() => {
+      .then((user) => {
+        Toast.show({
+          type: "success",
+          text1: "Welcome back, " + user.displayName,
+          position: "bottom",
+          bottomOffset: 30,
+          autoHide: true,
+          visibilityTime: 2000,
+        });
         navigation.reset({
           index: 0,
           routes: [{ name: "Host" }],
@@ -460,6 +467,14 @@ function SignUp({ navigation }) {
       .signup(name, email, password)
       .then(() => {
         setLoading(false);
+        Toast.show({
+          type: "success",
+          text1: "Welcome back, " + user.displayName,
+          position: "bottom",
+          bottomOffset: 30,
+          autoHide: true,
+          visibilityTime: 2000,
+        });
         navigation.reset({
           index: 0,
           routes: [{ name: "Host" }],
