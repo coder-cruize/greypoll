@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { TouchableOpacity, View, Text } from "react-native";
+import { TouchableOpacity, LogBox } from "react-native";
 import { NavigationContainer, DefaultTheme } from "@react-navigation/native";
 import {
   createStackNavigator,
@@ -10,6 +10,7 @@ import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import * as Font from "expo-font";
 import { Feather } from "@expo/vector-icons";
+import { auth } from "./firebase";
 import OnBoarding from "./screens/onboarding";
 import Hosted from "./screens/hosted";
 import Joined from "./screens/joined";
@@ -22,9 +23,7 @@ import { ToastConfig } from "./screens/components/toastconfig";
 
 const Stack = createStackNavigator();
 export default function App() {
-  //todo might combine polls and user into one object
   const [user, setUser] = useState(null);
-  const [reload, setReload] = useState(false);
   const [fontLoaded, setFontLoaded] = useState(false);
   const [polls, setPolls] = useState({
     hosted: [
@@ -41,11 +40,20 @@ export default function App() {
   });
 
   useEffect(() => {
-    //todo load firebase data here
-    console.log("Async Firebase request here");
-  }, [reload]);
+    auth.authState(auth.auth, (user) => {
+      if (user) {
+        setUser(user);
+      }
+      else {
+        setUser(false)
+      }
+    });
+  }, []);
   useEffect(() => {
-    //load local files here
+    // ignored warnings
+    LogBox.ignoreLogs([
+      "Non-serializable values were found in the navigation state",
+    ]);
     async function prepareAssets() {
       await Font.loadAsync({
         poppins: require("./assets/fonts/Poppins-SemiBold.ttf"),
@@ -53,10 +61,8 @@ export default function App() {
         montserrat: require("./assets/fonts/Montserrat-ExtraBold.ttf"),
       });
       setFontLoaded(true);
-      // Hide the splash screen
-      await SplashScreen.hideAsync();
     }
-    async function Loader() {
+    (async() => {
       try {
         // Show the splash screen
         await SplashScreen.preventAutoHideAsync();
@@ -64,13 +70,14 @@ export default function App() {
         console.warn(e);
       }
       await prepareAssets();
-    }
-    Loader();
+    })();
   }, []);
+  useEffect(() => {
+    if (!fontLoaded || user == null) {
+      (async() => await SplashScreen.hideAsync())()
+    }
+  }, [fontLoaded, user]);
 
-  if (!fontLoaded) {
-    return null;
-  }
   const AppTheme = {
     ...DefaultTheme,
     colors: {
@@ -79,12 +86,16 @@ export default function App() {
       background: "#1a1a1a"
     },
   };
+
+  if (!fontLoaded || user == null) {
+    return null;
+  }
   return (
     <NavigationContainer ref={navigationRef} theme={AppTheme}>
       <StatusBar style="light" translucent={true} />
       <Stack.Navigator
         screenOptions={({ navigation }) => ({
-          title: "Hi, " + user,
+          title: "Hi, " + user.displayName,
           headerRight: () => (
             <TouchableOpacity
               style={{ marginRight: 15 }}
@@ -102,11 +113,11 @@ export default function App() {
           cardShadowEnabled: false,
           ...TransitionPresets.ModalFadeTransition,
         })}>
-        {!user && (
+        {user == false && (
           <Stack.Screen
             name="OnBoard"
             component={OnBoarding}
-            options= {{ headerShown: false}}
+            options={{ headerShown: false }}
           />
         )}
         <Stack.Screen

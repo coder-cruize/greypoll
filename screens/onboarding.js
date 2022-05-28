@@ -1,30 +1,44 @@
+import { useEffect, useRef, useState } from "react";
 import {
   Text,
   View,
-  Button,
   TouchableOpacity,
   StyleSheet,
   Image,
   TextInput,
 } from "react-native";
+import { auth } from "../firebase";
 import Content from "./components/content";
+import { validator } from "./components/validator";
 import {
   createStackNavigator,
   TransitionPresets,
   CardStyleInterpolators,
 } from "@react-navigation/stack";
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { Feather } from "@expo/vector-icons";
 import { FontAwesome5 } from "@expo/vector-icons";
 import Logo from "../assets/home-icon.png";
 import AppIcon from "../assets/app-icon.png";
 import Google from "../assets/google.png";
-import { useState } from "react";
+import Modal from "./components/modal";
+import { ActivityIndicator } from "react-native-paper";
 
-const AuthTemplate = ({ text, text2, navigate, email, password, submit, accent }) => {
+const AuthTemplate = ({
+  text,
+  text2,
+  navigate,
+  email,
+  password,
+  name,
+  submit,
+  accent,
+}) => {
   const [showPassword, setShowPassword] = useState(true);
-
+  const [disabled, setDisabled] = useState(true);
+  const [warning, setWarning] = useState(null);
   const styles = StyleSheet.create({
-    imageContainer: { width: "100%", height: 200, alignItems: "center" },
+    imageContainer: { width: "100%", height: 150, alignItems: "center" },
     contentContainer: {
       flex: 1,
       paddingHorizontal: 10,
@@ -50,6 +64,8 @@ const AuthTemplate = ({ text, text2, navigate, email, password, submit, accent }
       justifyContent: "space-between",
       alignItems: "center",
       width: "100%",
+      borderWidth: 1,
+      borderColor: "transparent",
     },
     input: {
       flex: 1,
@@ -57,12 +73,24 @@ const AuthTemplate = ({ text, text2, navigate, email, password, submit, accent }
       fontFamily: "montserratMid",
       letterSpacing: 1,
     },
+    inputErrorContainer: {
+      width: "100%",
+      marginTop: 5,
+    },
+    errorText: {
+      color: "#a00000",
+      fontFamily: "montserratMid",
+      textAlign: "left",
+    },
     actionBtn: {
       backgroundColor: accent,
       paddingHorizontal: 100,
       paddingVertical: 10,
-      marginTop: 20,
+      marginTop: 30,
       borderRadius: 10,
+    },
+    actionBtnDisabled: {
+      backgroundColor: "#333333",
     },
     socials: {
       flexDirection: "row",
@@ -93,8 +121,25 @@ const AuthTemplate = ({ text, text2, navigate, email, password, submit, accent }
       fontFamily: "montserratMid",
     },
   });
+  useEffect(() => {
+    if (
+      !validator.email(email.value) ||
+      (name
+        ? !validator.password(password.value)
+        : !validator.length(password.value))  ||
+      !validator.name(name?.value)
+    ) {
+      setDisabled(true);
+    } else {
+      setDisabled(false);
+    }
+  }, [email, password, name]);
+
   return (
-    <View style={{ backgroundColor: "#1a1a1a", flex: 1 }}>
+    <KeyboardAwareScrollView
+      style={{ backgroundColor: "#1a1a1a" }}
+      keyboardShouldPersistTaps={"always"}
+      showsVerticalScrollIndicator={false}>
       <View style={styles.imageContainer}>
         <Image
           source={AppIcon}
@@ -107,20 +152,77 @@ const AuthTemplate = ({ text, text2, navigate, email, password, submit, accent }
       <View style={styles.contentContainer}>
         <View style={{ alignItems: "center" }}>
           <Text style={styles.heading}>{text} to your account</Text>
-          <View style={styles.inputContainer}>
+          {name && (
+            <>
+              <View
+                style={[
+                  styles.inputContainer,
+                  !validator.name(name.value) &&
+                    name.value != null && { borderColor: "#a00000" },
+                ]}>
+                <TextInput
+                  style={styles.input}
+                  placeholderTextColor="#3c3c3c"
+                  onFocus={() => setWarning("name")}
+                  onChangeText={name?.set}
+                  value={name?.value}
+                  placeholder="Name"
+                  keyboardType="default"
+                  autoComplete="off"
+                />
+              </View>
+              {warning == "name" &&
+                name?.value != null &&
+                !validator.name(name?.value) && (
+                  <View style={styles.inputErrorContainer}>
+                    <Text style={styles.errorText}>Atleast 3 characters</Text>
+                    <Text style={styles.errorText}>
+                      Should only consist of letters
+                    </Text>
+                    <Text style={styles.errorText}>
+                      No space or special characters or numbers
+                    </Text>
+                  </View>
+                )}
+            </>
+          )}
+          <View
+            style={[
+              styles.inputContainer,
+              !validator.email(email.value) &&
+                email.value != null && { borderColor: "#a00000" },
+            ]}>
             <TextInput
               style={styles.input}
               placeholderTextColor="#3c3c3c"
+              onFocus={() => setWarning("email")}
               onChangeText={email.set}
               value={email.value}
               placeholder="Email"
               keyboardType="email-address"
             />
           </View>
-          <View style={styles.inputContainer}>
+          {warning == "email" &&
+            email.value != null &&
+            !validator.email(email.value) && (
+              <View style={styles.inputErrorContainer}>
+                <Text style={styles.errorText}>
+                  Please enter a valid email address
+                </Text>
+              </View>
+            )}
+          <View
+            style={[
+              styles.inputContainer,
+              (name
+                ? !validator.password(password.value)
+                : !validator.length(password.value)) &&
+                password.value != null && { borderColor: "#a00000" },
+            ]}>
             <TextInput
               style={styles.input}
               secureTextEntry={showPassword}
+              onFocus={() => setWarning("password")}
               onChangeText={password.set}
               value={password.value}
               placeholderTextColor="#3c3c3c"
@@ -130,17 +232,46 @@ const AuthTemplate = ({ text, text2, navigate, email, password, submit, accent }
               style={{ marginLeft: 10 }}
               onPress={() => setShowPassword(!showPassword)}>
               {showPassword ? (
-                <Feather name="eye" size={20} color="#c4c4c4" />
+                <Feather name="eye" size={20} color="#666666" />
               ) : (
-                <Feather name="eye-off" size={20} color="#c4c4c4" />
+                <Feather name="eye-off" size={20} color="#666666" />
               )}
             </TouchableOpacity>
           </View>
-          <TouchableOpacity style={styles.actionBtn} onPress={submit}>
-            <Text style={{ color: "#c4c4c4", fontFamily: 'montserratMid' }}>{text}</Text>
+          {warning == "password" &&
+            password.value != null &&
+            (name
+              ? !validator.password(password.value)
+              : !validator.length(password.value)) && (
+              <View style={styles.inputErrorContainer}>
+                {name ? (
+                  <>
+                    <Text style={styles.errorText}>Atleast 8 characters</Text>
+                    <Text style={styles.errorText}>
+                      1 lower and upper case letter
+                    </Text>
+                    <Text style={styles.errorText}>1 number</Text>
+                    <Text style={styles.errorText}>1 special character</Text>
+                  </>
+                ) : (
+                  <Text style={styles.errorText}>Invalid Password</Text>
+                )}
+              </View>
+            )}
+          <TouchableOpacity
+            style={[styles.actionBtn, disabled && styles.actionBtnDisabled]}
+            onPress={submit}
+            disabled={disabled}>
+            <Text
+              style={{
+                color: disabled ? "#202020" : "#c4c4c4",
+                fontFamily: "montserratMid",
+              }}>
+              {text}
+            </Text>
           </TouchableOpacity>
         </View>
-        <View style={{ alignItems: "center" }}>
+        <View style={{ alignItems: "center", marginTop: 50 }}>
           <Text style={{ color: "#696969", fontFamily: "montserratMid" }}>
             or {text.toLowerCase()} with
           </Text>
@@ -160,9 +291,7 @@ const AuthTemplate = ({ text, text2, navigate, email, password, submit, accent }
               <FontAwesome5 name="twitter" size={25} color="#1DA1F2" />
             </TouchableOpacity>
           </View>
-          <TouchableOpacity
-            onPress={navigate}
-            style={styles.altBtn}>
+          <TouchableOpacity onPress={navigate} style={styles.altBtn}>
             <View style={{ flexDirection: "row" }}>
               <Text style={{ color: "#696969", fontFamily: "montserratMid" }}>
                 Don't have an account?
@@ -172,10 +301,9 @@ const AuthTemplate = ({ text, text2, navigate, email, password, submit, accent }
           </TouchableOpacity>
         </View>
       </View>
-    </View>
+    </KeyboardAwareScrollView>
   );
 };
-
 function Info({ navigation }) {
   const styles = StyleSheet.create({
     topItems: {
@@ -273,57 +401,92 @@ function Info({ navigation }) {
     </View>
   );
 }
-
 function Login({ navigation }) {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  
+  const [email, setEmail] = useState(null);
+  const [password, setPassword] = useState(null);
+  const [loading, setLoading] = useState(false);
   const submit = () => {
-    //todo login here
-    navigation.reset({
-      index: 0,
-      routes: [{ name: "Host" }],
-    });
-  }
+    setLoading(true);
+    auth.email
+      .login(email, password)
+      .then(() => {
+        navigation.reset({
+          index: 0,
+          routes: [{ name: "Host" }],
+        });
+      })
+      .catch((e) => {
+        setLoading(false);
+        alert(e.message);
+      });
+  };
+
   return (
-    <AuthTemplate
-      text="Login"
-      text2="Sign up"
-      navigate={() => navigation.navigate("SignUp")}
-      email={{ set: setEmail, value: email }}
-      password={{ set: setPassword, value: password }}
-      submit={submit}
-      accent="#36ae22"
-    />
+    <>
+      <AuthTemplate
+        text="Login"
+        text2="Sign up"
+        navigate={() => navigation.navigate("SignUp")}
+        email={{ set: setEmail, value: email }}
+        password={{ set: setPassword, value: password }}
+        submit={submit}
+        accent="#36ae22"
+      />
+      <Modal show={loading}>
+        <View
+          style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+          <ActivityIndicator size="large" color="#36ae22" />
+        </View>
+      </Modal>
+    </>
   );
 }
-
 function SignUp({ navigation }) {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-
+  const [name, setName] = useState(null);
+  const [email, setEmail] = useState(null);
+  const [password, setPassword] = useState(null);
+  const [loading, setLoading] = useState(false);
   const submit = () => {
-    //todo login here
-    navigation.reset({
-      index: 0,
-      routes: [{ name: "Host" }],
-    });
+    setLoading(true);
+    auth.email
+      .signup(name, email, password)
+      .then(() => {
+        setLoading(false);
+        navigation.reset({
+          index: 0,
+          routes: [{ name: "Host" }],
+        });
+      })
+      .catch((e) => {
+        setLoading(false);
+        console.log(e);
+      });
   };
   return (
-    <AuthTemplate
-      text="Sign up"
-      text2="Log in"
-      navigate={() => navigation.navigate("Login")}
-      email={{ set: setEmail, value: email }}
-      password={{ set: setPassword, value: password }}
-      submit={submit}
-      accent="#726ec9"
-    />
+    <>
+      <AuthTemplate
+        text="Sign up"
+        text2="Log in"
+        navigate={() => navigation.navigate("Login")}
+        name={{ set: setName, value: name }}
+        email={{ set: setEmail, value: email }}
+        password={{ set: setPassword, value: password }}
+        submit={submit}
+        accent="#726ec9"
+      />
+      <Modal show={loading}>
+        <View
+          style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+          <ActivityIndicator size="large" color={"#726EC9"} />
+        </View>
+      </Modal>
+    </>
   );
 }
 
 export default function OnBoarding({ navigation }) {
   const Stack = createStackNavigator();
+
   return (
     <Content style={{ marginBottom: 20 }}>
       <Stack.Navigator
