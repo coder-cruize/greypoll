@@ -9,7 +9,6 @@ import {
   Animated,
   Dimensions,
   Easing,
-  Alert,
 } from "react-native";
 import { RadioButton, ActivityIndicator } from "react-native-paper";
 import Toast from "react-native-toast-message";

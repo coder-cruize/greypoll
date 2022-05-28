@@ -15,6 +15,7 @@ import {
   TransitionPresets,
   CardStyleInterpolators,
 } from "@react-navigation/stack";
+import Toast from "react-native-toast-message";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { Feather } from "@expo/vector-icons";
 import { FontAwesome5 } from "@expo/vector-icons";
@@ -23,7 +24,6 @@ import AppIcon from "../assets/app-icon.png";
 import Google from "../assets/google.png";
 import Modal from "./components/modal";
 import { ActivityIndicator } from "react-native-paper";
-
 const AuthTemplate = ({
   text,
   text2,
@@ -126,7 +126,7 @@ const AuthTemplate = ({
       !validator.email(email.value) ||
       (name
         ? !validator.password(password.value)
-        : !validator.length(password.value))  ||
+        : !validator.length(password.value)) ||
       !validator.name(name?.value)
     ) {
       setDisabled(true);
@@ -276,7 +276,8 @@ const AuthTemplate = ({
             or {text.toLowerCase()} with
           </Text>
           <View style={styles.socials}>
-            <TouchableOpacity style={styles.socialBtn}>
+            <TouchableOpacity
+              style={styles.socialBtn}>
               <View style={{ width: 25, aspectRatio: 1 / 1 }}>
                 <Image
                   source={Google}
@@ -417,7 +418,14 @@ function Login({ navigation }) {
       })
       .catch((e) => {
         setLoading(false);
-        alert(e.message);
+        Toast.show({
+          type: "error",
+          text1: "Error: " + e + ".",
+          position: "bottom",
+          bottomOffset: 30,
+          autoHide: true,
+          visibilityTime: 2000,
+        });
       });
   };
 
@@ -459,7 +467,14 @@ function SignUp({ navigation }) {
       })
       .catch((e) => {
         setLoading(false);
-        console.log(e);
+        Toast.show({
+          type: "error",
+          text1: "Error: " + e + ".",
+          position: "bottom",
+          bottomOffset: 30,
+          autoHide: true,
+          visibilityTime: 2000,
+        });
       });
   };
   return (

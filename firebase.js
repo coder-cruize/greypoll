@@ -39,7 +39,6 @@ const db = {
     set(ref(database, path), data);
   },
 };
-
 const auth = {
   auth: authentication,
   authState: onAuthStateChanged,
@@ -48,13 +47,14 @@ const auth = {
       return new Promise((resolve, reject) => {
         createUserWithEmailAndPassword(authentication, email, password)
           .then((userCredential) => {
-            updateProfile(userCredential.user, { displayName: name })
-              .then(() => {
+            updateProfile(userCredential.user, { displayName: name }).then(
+              () => {
                 resolve(userCredential.user);
-              })
+              }
+            );
           })
           .catch((error) => {
-            reject(error);
+            reject(error.code.slice(5).replace(/-/g, " "));
           });
       });
     },
@@ -65,10 +65,10 @@ const auth = {
             resolve(userCredential.user);
           })
           .catch((error) => {
-            reject(error);
+            reject(error.code.slice(5).replace(/-/g, " "));
           });
-      })
-    }
+      });
+    },
   },
   signOut: () => {
     return new Promise((resolve, reject) => {
