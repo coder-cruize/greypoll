@@ -459,27 +459,24 @@ function SignUp({ navigation }) {
     auth.email
       .signup(name, email, password)
       .then((user) => {
-        setLoading(false);
-        db.write(user.uid, false)
-          .then(() => {
-            Toast.show({
-              type: "success",
-              text1: "Welcome " + user.displayName,
-            });
-            navigation.reset({
-              index: 0,
-              routes: [{ name: "Host" }],
-            });
-          })
+        Toast.show({
+          type: "success",
+          text1: "Welcome " + user.displayName,
+        });
+        navigation.reset({
+          index: 0,
+          routes: [{ name: "Host" }],
+        });
       })
       .catch((e) => {
+        setLoading(false)
         console.log(e)
-        setLoading(false);
         Toast.show({
           type: "error",
           text1: "Error: " + e + ".",
         });
-      });
+      })
+    
   };
   return (
     <>

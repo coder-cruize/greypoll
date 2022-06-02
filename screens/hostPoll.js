@@ -13,6 +13,7 @@ import {
 import { RadioButton, ActivityIndicator } from "react-native-paper";
 import Toast from "react-native-toast-message";
 import { auth, db } from "../firebase";
+import shortid from "shortid";
 import Content from "./components/content";
 import Modal from "./components/modal";
 import { Feather } from "@expo/vector-icons";
@@ -296,11 +297,7 @@ const Questions = ({ questions, setQuestions }) => {
 };
 
 function submitData(pollData, navigation, setLoading) {
-  function createId() {
-    //todo generate poll id from firebase
-    return "temporaryId";
-  }
-  const pollId = createId();
+  const pollId = shortid.generate();
   db.write("test_questions/" + pollId, pollData)
     .then(() => {
       db.write(
