@@ -27,14 +27,14 @@ export default function App() {
   const [fontLoaded, setFontLoaded] = useState(false);
   const [polls, setPolls] = useState({
     hosted: [
-      {
-        title: "Next Team Leader for GreyPoll.",
-        id: "3Zd7j48t",
-        count: 0,
-        accent: "#0F4FD7",
-        background:
-          "https://64.media.tumblr.com/e334f432080b67cef944eeefca5302af/tumblr_oiwytwMDKF1tf8vylo1_1280.pnj",
-      },
+      // {
+      //   title: "Next Team Leader for GreyPoll.",
+      //   id: "3Zd7j48t",
+      //   count: 0,
+      //   accent: "#0F4FD7",
+      //   background:
+      //     "https://64.media.tumblr.com/e334f432080b67cef944eeefca5302af/tumblr_oiwytwMDKF1tf8vylo1_1280.pnj",
+      // },
     ],
     joined: [],
   });
@@ -43,9 +43,8 @@ export default function App() {
     auth.authState(auth.auth, (user) => {
       if (user) {
         setUser(user);
-      }
-      else {
-        setUser(false)
+      } else {
+        setUser(false);
       }
     });
   }, []);
@@ -62,7 +61,7 @@ export default function App() {
       });
       setFontLoaded(true);
     }
-    (async() => {
+    (async () => {
       try {
         // Show the splash screen
         await SplashScreen.preventAutoHideAsync();
@@ -74,7 +73,7 @@ export default function App() {
   }, []);
   useEffect(() => {
     if (!fontLoaded || user == null) {
-      (async() => await SplashScreen.hideAsync())()
+      (async () => await SplashScreen.hideAsync())();
     }
   }, [fontLoaded, user]);
 
@@ -83,7 +82,7 @@ export default function App() {
     colors: {
       ...DefaultTheme.colors,
       primary: "rgb(255, 45, 85)",
-      background: "#1a1a1a"
+      background: "#1a1a1a",
     },
   };
 
@@ -166,7 +165,13 @@ export default function App() {
           }}
         />
       </Stack.Navigator>
-      <Toast config={ToastConfig} />
+      <Toast
+        config={ToastConfig}
+        position="bottom"
+        bottomOffset={30}
+        autoHide={true}
+        visibilityTime={2000}
+      />
     </NavigationContainer>
   );
 }

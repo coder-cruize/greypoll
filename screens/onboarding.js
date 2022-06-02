@@ -7,7 +7,7 @@ import {
   Image,
   TextInput,
 } from "react-native";
-import { auth } from "../firebase";
+import { auth, db } from "../firebase";
 import Content from "./components/content";
 import { validator } from "./components/validator";
 import {
@@ -413,10 +413,6 @@ function Login({ navigation }) {
         Toast.show({
           type: "success",
           text1: "Welcome back, " + user.displayName,
-          position: "bottom",
-          bottomOffset: 30,
-          autoHide: true,
-          visibilityTime: 2000,
         });
         navigation.reset({
           index: 0,
@@ -428,10 +424,6 @@ function Login({ navigation }) {
         Toast.show({
           type: "error",
           text1: "Error: " + e + ".",
-          position: "bottom",
-          bottomOffset: 30,
-          autoHide: true,
-          visibilityTime: 2000,
         });
       });
   };
@@ -461,34 +453,31 @@ function SignUp({ navigation }) {
   const [email, setEmail] = useState(null);
   const [password, setPassword] = useState(null);
   const [loading, setLoading] = useState(false);
+
   const submit = () => {
     setLoading(true);
     auth.email
       .signup(name, email, password)
-      .then(() => {
+      .then((user) => {
         setLoading(false);
-        Toast.show({
-          type: "success",
-          text1: "Welcome back, " + user.displayName,
-          position: "bottom",
-          bottomOffset: 30,
-          autoHide: true,
-          visibilityTime: 2000,
-        });
-        navigation.reset({
-          index: 0,
-          routes: [{ name: "Host" }],
-        });
+        db.write(user.uid, false)
+          .then(() => {
+            Toast.show({
+              type: "success",
+              text1: "Welcome " + user.displayName,
+            });
+            navigation.reset({
+              index: 0,
+              routes: [{ name: "Host" }],
+            });
+          })
       })
       .catch((e) => {
+        console.log(e)
         setLoading(false);
         Toast.show({
           type: "error",
           text1: "Error: " + e + ".",
-          position: "bottom",
-          bottomOffset: 30,
-          autoHide: true,
-          visibilityTime: 2000,
         });
       });
   };
@@ -543,7 +532,6 @@ export default function OnBoarding({ navigation }) {
           headerTintColor: "#fff",
           headerTitleStyle: { fontFamily: "poppins" },
         })}>
-        <Stack.Screen name="Login" component={Login} />
         <Stack.Screen
           name="Info"
           component={Info}
@@ -552,6 +540,7 @@ export default function OnBoarding({ navigation }) {
             ...TransitionPresets.ModalFadeTransition,
           }}
         />
+        <Stack.Screen name="Login" component={Login} />
         <Stack.Screen name="SignUp" component={SignUp} />
       </Stack.Navigator>
     </Content>

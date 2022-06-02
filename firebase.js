@@ -36,8 +36,16 @@ const db = {
     });
   },
   write: function (path, data) {
-    set(ref(database, path), data);
-  },
+    return new Promise((resolve, reject) => {
+      set(ref(database, path), data)
+        .then(() => {
+          resolve()
+        })
+        .catch((e) => {
+          reject(e.code)
+        })
+    })
+  }
 };
 const auth = {
   auth: authentication,

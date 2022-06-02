@@ -12,12 +12,11 @@ import {
 } from "react-native";
 import { RadioButton, ActivityIndicator } from "react-native-paper";
 import Toast from "react-native-toast-message";
+import { auth, db } from "../firebase";
 import Content from "./components/content";
 import Modal from "./components/modal";
 import { Feather } from "@expo/vector-icons";
-import {
-  createStackNavigator,
-} from "@react-navigation/stack";
+import { createStackNavigator } from "@react-navigation/stack";
 
 const ClickOption = ({ isActive = false, text, style, onPress }) => {
   return (
@@ -50,21 +49,12 @@ const Options = ({ animation, options, setOptions }) => {
   });
   const removeOption = (id) => {
     const arr = [...options];
-    const index = arr.findIndex((option) => {
-      return option.id === id;
-    });
-    arr.splice(index, 1);
-    arr.forEach((option, id) => {
-      option.id = id + 1;
-    });
+    arr.splice(id, 1);
     setOptions(arr);
   };
   const addOption = () => {
     const arr = [...options];
-    arr.push({
-      id: arr.length + 1,
-      title: optionInput,
-    });
+    arr.push(optionInput);
     setOptions(arr);
     setOptionInput("");
   };
@@ -130,13 +120,13 @@ const Options = ({ animation, options, setOptions }) => {
         </Text>
       ) : null}
       <View style={{ flexWrap: "wrap", flexDirection: "row" }}>
-        {options.map((item) => {
+        {options.map((item, index) => {
           return (
             <TouchableOpacity
-              key={item.id}
+              key={index}
               style={{ margin: 5 }}
               onPress={() => {
-                removeOption(item.id);
+                removeOption(index);
               }}>
               <Text
                 style={{
@@ -147,7 +137,7 @@ const Options = ({ animation, options, setOptions }) => {
                   borderRadius: 10,
                   color: "#b1b1b1",
                 }}>
-                {item.title}
+                {item}
               </Text>
             </TouchableOpacity>
           );
@@ -159,13 +149,7 @@ const Options = ({ animation, options, setOptions }) => {
 const Questions = ({ questions, setQuestions }) => {
   const removeQuestion = (id) => {
     const arr = [...questions];
-    const index = arr.findIndex((questions) => {
-      return questions.id === id;
-    });
-    arr.splice(index, 1);
-    arr.forEach((questions, id) => {
-      questions.id = id + 1;
-    });
+    arr.splice(id, 1);
     setQuestions(arr);
   };
   const Icon = ({ type, count }) => {
@@ -233,7 +217,7 @@ const Questions = ({ questions, setQuestions }) => {
       Closing();
     }
   };
-  const Question = ({ item }) => {
+  const Question = ({ item, id }) => {
     const animations = {
       showDelete: {
         width: new Animated.Value(0),
@@ -244,7 +228,6 @@ const Questions = ({ questions, setQuestions }) => {
       inputRange: [0, 1],
       outputRange: [0, 50],
     });
-
     return (
       <View
         style={{
@@ -288,7 +271,7 @@ const Questions = ({ questions, setQuestions }) => {
             opacity: animations.showDelete.opacity,
           }}>
           <TouchableOpacity
-            onPress={() => removeQuestion(item.id)}
+            onPress={() => removeQuestion(id)}
             style={{
               padding: 10,
               flex: 1,
@@ -304,38 +287,54 @@ const Questions = ({ questions, setQuestions }) => {
   return (
     <View style={{ width: "100%", flex: 1, marginBottom: 20 }}>
       <ScrollView showsVerticalScrollIndicator={false}>
-        {questions.map((item) => {
-          return <Question item={item} key={item.id} />;
+        {questions.map((item, index) => {
+          return <Question item={item} id={index} key={index} />;
         })}
       </ScrollView>
     </View>
   );
 };
 
-function submitData(data, navigation) {
-  //todo generate poll id from firebase
-  //todo handle firebase here
-  console.log(data);
-  setTimeout(() => {
-    navigation.goBack();
-    navigation.goBack();
-    Toast.show({
-      type: "success",
-      text1: "Successfully created Poll.",
-      position: "bottom",
-      bottomOffset: 30,
-      autoHide: true,
-      visibilityTime: 2000,
+function submitData(pollData, navigation, setLoading) {
+  function createId() {
+    //todo generate poll id from firebase
+    return "temporaryId";
+  }
+  const pollId = createId();
+  db.write("test_questions/" + pollId, pollData)
+    .then(() => {
+      db.write(
+        "test_users/" + auth.auth.currentUser.uid + "/hostedIds/" + pollId,
+        true
+      )
+        .then(() => {
+          Toast.show({
+            type: "success",
+            text1: "Successfully created Poll.",
+          });
+          navigation.goBack();
+          navigation.goBack();
+        })
+        .catch((e) => {
+          console.log(e);
+        });
+    })
+    .catch(() => {
+      Toast.show({
+        type: "error",
+        text1: "Could not create poll",
+      });
+    })
+    .finally(() => {
+      setLoading(false);
     });
-  }, 5000);
-  //todo handle incase submit data has error to remove loader
 }
 
 function TitlePage({ navigation }) {
   const [pollTitle, setPollTitle] = useState("");
   const disabled = pollTitle.length < 5;
   const Done = () => {
-    navigation.navigate("page2");
+    navigation.navigate("page2", {pollTitle: pollTitle});
   };
   return (
     <Content style={{ justifyContent: "center", alignItems: "center" }}>
@@ -378,7 +377,7 @@ function TitlePage({ navigation }) {
   );
 }
 
-function QuestionsPage({ navigation }) {
+function QuestionsPage({ navigation, route }) {
   const [questionInput, setQuestionInput] = useState("");
   const [questions, setQuestions] = useState([]);
   const [options, setOptions] = useState([]);
@@ -391,6 +390,7 @@ function QuestionsPage({ navigation }) {
     },
     inputBox: new Animated.Value(0),
   });
+  const {pollTitle} = route.params
   const disabledQuestionBtn =
     questionInput.length < 5 ||
     (answerType == "multichoice" && options.length < 2);
@@ -451,7 +451,6 @@ function QuestionsPage({ navigation }) {
       setQuestions([
         ...questions,
         {
-          id: questions.length + 1,
           question: questionInput,
           answerType: answerType,
           options: answerType == "multichoice" ? options : null,
@@ -462,8 +461,12 @@ function QuestionsPage({ navigation }) {
     });
   };
   const Done = () => {
-    setLoading(false);
-    submitData(questions, navigation);
+    setLoading(true);
+    const pollData = {
+      questionList: questions,
+      title: pollTitle,
+    };
+    submitData(pollData, navigation, setLoading);
   };
   return (
     <Content style={{ justifyContent: "center", alignItems: "center" }}>

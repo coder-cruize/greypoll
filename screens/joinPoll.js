@@ -27,10 +27,6 @@ function submitData(data, navigation, isQr = false) {
     Toast.show({
       type: "success",
       text1: "Successfully joined Poll.",
-      position: "bottom",
-      bottomOffset: 30,
-      autoHide: true,
-      visibilityTime: 2000,
     });
   }, 5000);
   //todo handle incase submit data has error to remove loader
