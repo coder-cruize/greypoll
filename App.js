@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, createContext } from "react";
 import { TouchableOpacity, LogBox } from "react-native";
 import { NavigationContainer, DefaultTheme } from "@react-navigation/native";
 import {
@@ -10,7 +10,7 @@ import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import * as Font from "expo-font";
 import { Feather } from "@expo/vector-icons";
-import { auth } from "./firebase";
+import { auth, db } from "./firebase";
 import OnBoarding from "./screens/onboarding";
 import Hosted from "./screens/hosted";
 import Joined from "./screens/joined";
@@ -19,35 +19,60 @@ import HostPoll from "./screens/hostPoll";
 import JoinPoll from "./screens/joinPoll";
 import Settings from "./screens/settings";
 import { navigationRef } from "./screens/components/navigate";
+import appData from "./screens/components/appData";
 import { ToastConfig } from "./screens/components/toastconfig";
 
 const Stack = createStackNavigator();
 export default function App() {
   const [user, setUser] = useState(null);
   const [fontLoaded, setFontLoaded] = useState(false);
-  const [polls, setPolls] = useState({
-    hosted: [
-      // {
-      //   title: "Next Team Leader for GreyPoll.",
-      //   id: "3Zd7j48t",
-      //   count: 0,
-      //   accent: "#0F4FD7",
-      //   background:
-      //     "https://64.media.tumblr.com/e334f432080b67cef944eeefca5302af/tumblr_oiwytwMDKF1tf8vylo1_1280.pnj",
-      // },
-    ],
-    joined: [],
-  });
-
+  const [reload, setReload] = useState(false);
+  const [hosted, setHosted] = useState(null);
+  const [joined, setJoined] = useState(null);
+  const [polls, setPolls] = useState(null);
   useEffect(() => {
     auth.authState(auth.auth, (user) => {
       if (user) {
-        setUser(user);
+        db.read("users/" + user.uid)
+          .then((userData) => {
+            if (!userData) {
+              setHosted([]);
+              setJoined([]);
+              return;
+            }
+            Object.keys(userData.hostedIds || {}).map((questionId) => {
+              db.read("questions/" + questionId).then((questions) => {
+                const data = {
+                  questions: questions.questionList,
+                  title: questions.title,
+                  id: questionId,
+                  count: 0,
+                  accent: "#0F4FD7",
+                  background:
+                    "https://64.media.tumblr.com/e334f432080b67cef944eeefca5302af/tumblr_oiwytwMDKF1tf8vylo1_1280.pnj",
+                };
+                if (hosted) {
+                  setHosted([...hosted, data]);
+                } else {
+                  setHosted([data]);
+                }
+              });
+            });
+            Object.keys(userData.joinedIds || {}).map((questionId) => {
+              //todo handle joined poll data here
+              console.log(questionId);
+            });
+            setJoined([]);
+          })
+          .then(() => {
+            setUser(user);
+          });
       } else {
         setUser(false);
+        setPolls(false);
       }
     });
-  }, []);
+  }, [reload]);
   useEffect(() => {
     // ignored warnings
     LogBox.ignoreLogs([
@@ -72,11 +97,21 @@ export default function App() {
     })();
   }, []);
   useEffect(() => {
-    if (!fontLoaded || user == null) {
+    if (hosted && joined) {
+      setPolls({
+        hosted: hosted,
+        joined: joined,
+      });
+    }
+  }, [hosted, joined]);
+  useEffect(() => {
+    if (fontLoaded && user != null && polls != null) {
       (async () => await SplashScreen.hideAsync())();
     }
-  }, [fontLoaded, user]);
-
+  }, [fontLoaded, user, polls]);
+  const Reload = () => {
+    setReload(!reload);
+  };
   const AppTheme = {
     ...DefaultTheme,
     colors: {
@@ -85,93 +120,93 @@ export default function App() {
       background: "#1a1a1a",
     },
   };
-
-  if (!fontLoaded || user == null) {
+  if (!fontLoaded || user == null || polls == null) {
     return null;
   }
   return (
-    <NavigationContainer ref={navigationRef} theme={AppTheme}>
-      <StatusBar style="light" translucent={true} />
-      <Stack.Navigator
-        screenOptions={({ navigation }) => ({
-          title: "Hi, " + user.displayName,
-          headerRight: () => (
-            <TouchableOpacity
-              style={{ marginRight: 15 }}
-              onPress={() => navigation.navigate("Settings")}>
-              <Feather name="settings" size={24} color="#fff" />
-            </TouchableOpacity>
-          ),
-          headerStyle: {
-            backgroundColor: "#1a1a1a",
-            elevation: 0,
-            shadowOpacity: 0,
-          },
-          headerTintColor: "#fff",
-          headerTitleStyle: { fontFamily: "poppins" },
-          cardShadowEnabled: false,
-          ...TransitionPresets.ModalFadeTransition,
-        })}>
-        {user == false && (
+    <appData.Provider value={{ polls: polls, reload: () => setReload(!reload) }}>
+      <NavigationContainer ref={navigationRef} theme={AppTheme}>
+        <StatusBar style="light" translucent={true} />
+        <Stack.Navigator
+          screenOptions={({ navigation }) => ({
+            title: "Hi, " + user?.displayName,
+            headerRight: () => (
+              <TouchableOpacity
+                style={{ marginRight: 15 }}
+                onPress={() => navigation.navigate("Settings")}>
+                <Feather name="settings" size={24} color="#fff" />
+              </TouchableOpacity>
+            ),
+            headerStyle: {
+              backgroundColor: "#1a1a1a",
+              elevation: 0,
+              shadowOpacity: 0,
+            },
+            headerTintColor: "#fff",
+            headerTitleStyle: { fontFamily: "poppins" },
+            cardShadowEnabled: false,
+            ...TransitionPresets.ModalFadeTransition,
+          })}>
+          {user == false && (
+            <Stack.Screen
+              name="OnBoard"
+              component={OnBoarding}
+              options={{ headerShown: false }}
+            />
+          )}
           <Stack.Screen
-            name="OnBoard"
-            component={OnBoarding}
-            options={{ headerShown: false }}
+            name="Host"
+            component={Hosted}
           />
-        )}
-        <Stack.Screen
-          name="Host"
-          component={Hosted}
-          initialParams={{ polls: polls.hosted }}
+          <Stack.Screen
+            name="Join"
+            component={Joined}
+            options={{ headerLeft: () => null }}
+          />
+          <Stack.Screen
+            name="Vote"
+            component={Vote}
+            options={{
+              title: "",
+              headerShown: false,
+              ...TransitionPresets.FadeFromBottomAndroid,
+            }}
+          />
+          <Stack.Screen
+            name="HostPoll"
+            component={HostPoll}
+            initialParams={{ reload: Reload }}
+            options={{
+              headerShown: false,
+              ...TransitionPresets.FadeFromBottomAndroid,
+            }}
+          />
+          <Stack.Screen
+            name="JoinPoll"
+            component={JoinPoll}
+            options={{
+              headerShown: false,
+              ...TransitionPresets.FadeFromBottomAndroid,
+            }}
+          />
+          <Stack.Screen
+            name="Settings"
+            component={Settings}
+            options={{
+              title: "Settings",
+              headerRight: () => null,
+              ...TransitionPresets.SlideFromRightIOS,
+            }}
+          />
+        </Stack.Navigator>
+        <Toast
+          config={ToastConfig}
+          position="bottom"
+          bottomOffset={30}
+          autoHide={true}
+          visibilityTime={2000}
         />
-        <Stack.Screen
-          name="Join"
-          component={Joined}
-          initialParams={{ polls: polls.joined }}
-          options={{ headerLeft: () => null }}
-        />
-        <Stack.Screen
-          name="Vote"
-          component={Vote}
-          options={{
-            title: "",
-            headerShown: false,
-            ...TransitionPresets.FadeFromBottomAndroid,
-          }}
-        />
-        <Stack.Screen
-          name="HostPoll"
-          component={HostPoll}
-          options={{
-            headerShown: false,
-            ...TransitionPresets.FadeFromBottomAndroid,
-          }}
-        />
-        <Stack.Screen
-          name="JoinPoll"
-          component={JoinPoll}
-          options={{
-            headerShown: false,
-            ...TransitionPresets.FadeFromBottomAndroid,
-          }}
-        />
-        <Stack.Screen
-          name="Settings"
-          component={Settings}
-          options={{
-            title: "Settings",
-            headerRight: () => null,
-            ...TransitionPresets.SlideFromRightIOS,
-          }}
-        />
-      </Stack.Navigator>
-      <Toast
-        config={ToastConfig}
-        position="bottom"
-        bottomOffset={30}
-        autoHide={true}
-        visibilityTime={2000}
-      />
-    </NavigationContainer>
+      </NavigationContainer>
+    </appData.Provider>
   );
 }

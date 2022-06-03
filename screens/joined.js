@@ -1,13 +1,15 @@
-import { StyleSheet, Text, View, Button } from 'react-native';
-import Tabs from './components/tabs';
-import PollList from './components/polls';
-import Content from './components/content';
+import { useContext } from "react";
+import Tabs from "./components/tabs";
+import PollList from "./components/polls";
+import Content from "./components/content";
+import appData from "./components/appData";
 
-export default function Join({ route }) {
+export default function Join() {
+  const { polls } = useContext(appData);
   return (
-    <Content style={{ backgroundColor: '#1a1a1a'}}>
+    <Content style={{ backgroundColor: "#1a1a1a" }}>
       <Tabs hosting={false} />
-      <PollList datalist={route.params.polls}/>
+      <PollList datalist={polls.joined} />
     </Content>
   );
 }

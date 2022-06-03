@@ -18,6 +18,9 @@ import Content from "./components/content";
 import Modal from "./components/modal";
 import { Feather } from "@expo/vector-icons";
 import { createStackNavigator } from "@react-navigation/stack";
+import { useContext } from "react";
+import appData from "./components/appData";
+
 
 const ClickOption = ({ isActive = false, text, style, onPress }) => {
   return (
@@ -296,12 +299,12 @@ const Questions = ({ questions, setQuestions }) => {
   );
 };
 
-function submitData(pollData, navigation, setLoading) {
+function submitData(pollData, navigation, setLoading, reload) {
   const pollId = shortid.generate();
-  db.write("test_questions/" + pollId, pollData)
+  db.write("questions/" + pollId, pollData)
     .then(() => {
       db.write(
-        "test_users/" + auth.auth.currentUser.uid + "/hostedIds/" + pollId,
+        "users/" + auth.auth.currentUser.uid + "/hostedIds/" + pollId,
         true
       )
         .then(() => {
@@ -311,6 +314,7 @@ function submitData(pollData, navigation, setLoading) {
           });
           navigation.goBack();
           navigation.goBack();
+          reload()
         })
         .catch((e) => {
           console.log(e);
@@ -331,7 +335,7 @@ function TitlePage({ navigation }) {
   const [pollTitle, setPollTitle] = useState("");
   const disabled = pollTitle.length < 5;
   const Done = () => {
-    navigation.navigate("page2", {pollTitle: pollTitle});
+    navigation.navigate("page2", { pollTitle: pollTitle });
   };
   return (
     <Content style={{ justifyContent: "center", alignItems: "center" }}>
@@ -387,7 +391,8 @@ function QuestionsPage({ navigation, route }) {
     },
     inputBox: new Animated.Value(0),
   });
-  const {pollTitle} = route.params
+  const { reload } = useContext(appData);
+  const { pollTitle } = route.params;
   const disabledQuestionBtn =
     questionInput.length < 5 ||
     (answerType == "multichoice" && options.length < 2);
@@ -463,7 +468,7 @@ function QuestionsPage({ navigation, route }) {
       questionList: questions,
       title: pollTitle,
     };
-    submitData(pollData, navigation, setLoading);
+    submitData(pollData, navigation, setLoading, reload);
   };
   return (
     <Content style={{ justifyContent: "center", alignItems: "center" }}>
@@ -567,7 +572,8 @@ function QuestionsPage({ navigation, route }) {
   );
 }
 
-export default function HostPoll() {
+export default function HostPoll({ route }) {
+  const {reload} = route.params
   const Stack = createStackNavigator();
   const forFade = ({ current }) => ({
     cardStyle: {
@@ -579,9 +585,6 @@ export default function HostPoll() {
     config: {
       duration: 600,
     },
-  };
-  const confirmExit = () => {
-    alert("mme");
   };
   return (
     <Stack.Navigator
@@ -600,7 +603,7 @@ export default function HostPoll() {
         },
       }}>
       <Stack.Screen name="page1" component={TitlePage} />
-      <Stack.Screen name="page2" component={QuestionsPage} />
+      <Stack.Screen name="page2" component={QuestionsPage} initialParams={{reload: reload}} />
     </Stack.Navigator>
   );
 }
