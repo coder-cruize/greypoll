@@ -11,34 +11,52 @@ import {
 import { createStackNavigator } from "@react-navigation/stack";
 import { ActivityIndicator } from "react-native-paper";
 import Toast from "react-native-toast-message";
+import { db, auth } from "../firebase";
 import { BarCodeScanner } from "expo-barcode-scanner";
 import Content from "./components/content";
 import Modal from "./components/modal";
 import { Feather } from "@expo/vector-icons";
+import appData from "./components/appData";
+import { useContext } from "react";
 
-function submitData(data, navigation, isQr = false) {
-  //todo handle firebase here
-  console.log(data);
-  setTimeout(() => {
-    navigation.goBack();
-    if (isQr) {
-      navigation.goBack();
+function submitData(pollId, navigation, isQr, reload) {
+  db.read("/questions/"+pollId).then((data) => {
+    if (!data == null) {
+      db.write(
+        "users/" + auth.auth.currentUser.uid + "/joinedIds/" + pollId,
+        true
+      )
+        .then(() => {
+          Toast.show({
+            type: "success",
+            text1: "Successfully created Poll.",
+          });
+          navigation.goBack();
+          if (isQr) navigation.goBack();
+          reload();
+        })
+        .catch((e) => {
+          console.log(e);
+        });
+    } else {
+      Toast.show({
+        type: "error",
+        text1: "Poll Does not Exist",
+      });
     }
-    Toast.show({
-      type: "success",
-      text1: "Successfully joined Poll.",
-    });
-  }, 5000);
+  });
   //todo handle incase submit data has error to remove loader
 }
 function Index({ navigation }) {
   const [joinId, setJoinID] = useState("");
   const [loading, setLoading] = useState(false);
+  const { reload } = useContext(appData);
+
   const disabled = joinId.length < 5;
 
   const Done = () => {
     setLoading(true);
-    submitData(joinId, navigation);
+    submitData(joinId, navigation, false, reload);
   };
 
   return (
@@ -111,6 +129,7 @@ function Qr({ navigation }) {
   const [cameraPermission, setCameraPermission] = useState(null);
   const [scanned, setScanned] = useState(null);
   const [cameraLoad, setCameraLoad] = useState(false);
+  const { reload } = useContext(appData);
 
   useEffect(() => {
     (async () => {
@@ -128,7 +147,7 @@ function Qr({ navigation }) {
       data.startsWith("greypoll://")
     ) {
       setScanned(data);
-      submitData(data.replace("greypoll://#id:", ""), navigation, true);
+      submitData(data.replace("greypoll://#id:", ""), navigation, true, reload);
     }
     if (!data.startsWith("greypoll://")) {
       setScanned(false);

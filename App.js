@@ -35,12 +35,7 @@ export default function App() {
       if (user) {
         db.read("users/" + user.uid)
           .then((userData) => {
-            if (!userData) {
-              setHosted([]);
-              setJoined([]);
-              return;
-            }
-            Object.keys(userData.hostedIds || {}).map((questionId) => {
+            Object.keys(userData?.hostedIds || {}).map((questionId) => {
               db.read("questions/" + questionId).then((questions) => {
                 const data = {
                   questions: questions.questionList,
@@ -58,11 +53,12 @@ export default function App() {
                 }
               });
             });
-            Object.keys(userData.joinedIds || {}).map((questionId) => {
+            Object.keys(userData?.joinedIds || {}).map((questionId) => {
               //todo handle joined poll data here
               console.log(questionId);
             });
-            setJoined([]);
+            if (!userData?.hostedIds) setHosted([])
+            if(!userData?.joinedIds) setJoined([]);
           })
           .then(() => {
             setUser(user);
@@ -124,7 +120,8 @@ export default function App() {
     return null;
   }
   return (
-    <appData.Provider value={{ polls: polls, reload: () => setReload(!reload) }}>
+    <appData.Provider
+      value={{ polls: polls, reload: () => setReload(!reload) }}>
       <NavigationContainer ref={navigationRef} theme={AppTheme}>
         <StatusBar style="light" translucent={true} />
         <Stack.Navigator
@@ -154,10 +151,7 @@ export default function App() {
               options={{ headerShown: false }}
             />
           )}
-          <Stack.Screen
-            name="Host"
-            component={Hosted}
-          />
+          <Stack.Screen name="Host" component={Hosted} />
           <Stack.Screen
             name="Join"
             component={Joined}
