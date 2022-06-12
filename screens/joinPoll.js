@@ -19,30 +19,54 @@ import { Feather } from "@expo/vector-icons";
 import appData from "./components/appData";
 import { useContext } from "react";
 
-function submitData(pollId, navigation, isQr, reload) {
-  db.read("/questions/"+pollId).then((data) => {
-    if (!data == null) {
-      db.write(
-        "users/" + auth.auth.currentUser.uid + "/joinedIds/" + pollId,
-        true
-      )
-        .then(() => {
-          Toast.show({
-            type: "success",
-            text1: "Successfully created Poll.",
-          });
-          navigation.goBack();
-          if (isQr) navigation.goBack();
-          reload();
-        })
-        .catch((e) => {
-          console.log(e);
-        });
-    } else {
+function submitData(pollId, navigation, isQr, reload, setLoading, setScanned) {
+  setLoading(true);
+  db.read("/questions/" + pollId).then((data) => {
+    if (data == null) {
+      setLoading(false);
       Toast.show({
         type: "error",
         text1: "Poll Does not Exist",
       });
+      setTimeout(() => {
+        if (setScanned) {
+          setScanned(null)
+        }
+      }, 2000);
+    } else {
+      db.read("users/" + auth.auth.currentUser.uid + "/hostedIds/"+pollId).then((data) => {
+        console.log(data);
+        if (data != null) {
+          setLoading(false);
+          Toast.show({
+            type: "error",
+            text1: "You cannot join a poll hosted by you",
+          });
+          setTimeout(() => {
+            if (setScanned) {
+              setScanned(null)
+            }
+          }, 2000);
+        } else {
+          db.write(
+            "users/" + auth.auth.currentUser.uid + "/joinedIds/" + pollId,
+            true
+          )
+            .then(() => {
+              setLoading(false)
+              Toast.show({
+                type: "success",
+                text1: "Successfully joined Poll.",
+              });
+              navigation.goBack();
+              if (isQr) navigation.goBack();
+              reload();
+            })
+            .catch((e) => {
+              console.log(e);
+            });
+        }
+      })
     }
   });
   //todo handle incase submit data has error to remove loader
@@ -55,8 +79,7 @@ function Index({ navigation }) {
   const disabled = joinId.length < 5;
 
   const Done = () => {
-    setLoading(true);
-    submitData(joinId, navigation, false, reload);
+    submitData(joinId, navigation, false, reload, setLoading);
   };
 
   return (
@@ -129,6 +152,7 @@ function Qr({ navigation }) {
   const [cameraPermission, setCameraPermission] = useState(null);
   const [scanned, setScanned] = useState(null);
   const [cameraLoad, setCameraLoad] = useState(false);
+  const [loading, setLoading] = useState(false);
   const { reload } = useContext(appData);
 
   useEffect(() => {
@@ -147,7 +171,14 @@ function Qr({ navigation }) {
       data.startsWith("greypoll://")
     ) {
       setScanned(data);
-      submitData(data.replace("greypoll://#id:", ""), navigation, true, reload);
+      submitData(
+        data.replace("greypoll://#id:", ""),
+        navigation,
+        true,
+        reload,
+        setLoading,
+        setScanned
+      );
     }
     if (!data.startsWith("greypoll://")) {
       setScanned(false);
@@ -179,6 +210,12 @@ function Qr({ navigation }) {
             code.
           </Text>
         </View>
+        <Modal show={loading}>
+          <View
+            style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+            <ActivityIndicator size="large" color="#726EC9" />
+          </View>
+        </Modal>
       </Content>
     );
   }
@@ -239,7 +276,7 @@ function Qr({ navigation }) {
           </View>
         </View>
       </View>
-      <Modal show={typeof scanned == "string"}>
+      <Modal show={loading}>
         <View
           style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
           <ActivityIndicator size="large" color="#726EC9" />
