@@ -54,11 +54,34 @@ export default function App() {
               });
             });
             Object.keys(userData?.joinedIds || {}).map((questionId) => {
-              //todo handle joined poll data here
-              console.log(questionId);
+              db.read("questions/" + questionId).then((questions) => {
+                if (questions == null) {
+                  db.write("users/" + user.uid + "/joinedIds/" + questionId, null)
+                    .then(() => {
+                      if (joined == null) {
+                        setJoined([])
+                      }
+                    })
+                  return;
+                }
+                const data = {
+                  questions: questions.questionList,
+                  title: questions.title,
+                  id: questionId,
+                  count: 0,
+                  accent: "#0F4FD7",
+                  background:
+                    "https://64.media.tumblr.com/e334f432080b67cef944eeefca5302af/tumblr_oiwytwMDKF1tf8vylo1_1280.pnj",
+                };
+                if (hosted) {
+                  setJoined([...hosted, data]);
+                } else {
+                  setJoined([data]);
+                }
+              });
             });
             if (!userData?.hostedIds) setHosted([])
-            if(!userData?.joinedIds) setJoined([]);
+            if (!userData?.joinedIds) setJoined([]);
           })
           .then(() => {
             setUser(user);
