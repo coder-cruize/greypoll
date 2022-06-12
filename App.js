@@ -10,7 +10,7 @@ import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import * as Font from "expo-font";
 import { Feather } from "@expo/vector-icons";
-import { auth, db } from "./firebase";
+import { useFirebase } from "./firebase";
 import OnBoarding from "./screens/onboarding";
 import Hosted from "./screens/hosted";
 import Joined from "./screens/joined";
@@ -30,6 +30,7 @@ export default function App() {
   const [hosted, setHosted] = useState(null);
   const [joined, setJoined] = useState(null);
   const [polls, setPolls] = useState(null);
+  const { auth, db } = useFirebase();
   useEffect(() => {
     auth.authState(auth.auth, (user) => {
       if (user) {
@@ -56,12 +57,14 @@ export default function App() {
             Object.keys(userData?.joinedIds || {}).map((questionId) => {
               db.read("questions/" + questionId).then((questions) => {
                 if (questions == null) {
-                  db.write("users/" + user.uid + "/joinedIds/" + questionId, null)
-                    .then(() => {
-                      if (joined == null) {
-                        setJoined([])
-                      }
-                    })
+                  db.write(
+                    "users/" + user.uid + "/joinedIds/" + questionId,
+                    null
+                  ).then(() => {
+                    if (joined == null) {
+                      setJoined([]);
+                    }
+                  });
                   return;
                 }
                 const data = {
@@ -80,7 +83,7 @@ export default function App() {
                 }
               });
             });
-            if (!userData?.hostedIds) setHosted([])
+            if (!userData?.hostedIds) setHosted([]);
             if (!userData?.joinedIds) setJoined([]);
           })
           .then(() => {

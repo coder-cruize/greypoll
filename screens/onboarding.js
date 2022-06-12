@@ -7,7 +7,9 @@ import {
   Image,
   TextInput,
 } from "react-native";
-import { auth, db } from "../firebase";
+// import { auth, db } from "../firebase";
+import { useFirebase } from "../firebase";
+
 import Content from "./components/content";
 import { validator } from "./components/validator";
 import {
@@ -405,6 +407,8 @@ function Login({ navigation }) {
   const [email, setEmail] = useState(null);
   const [password, setPassword] = useState(null);
   const [loading, setLoading] = useState(false);
+  const { auth } = useFirebase();
+
   const submit = () => {
     setLoading(true);
     auth.email
@@ -453,7 +457,7 @@ function SignUp({ navigation }) {
   const [email, setEmail] = useState(null);
   const [password, setPassword] = useState(null);
   const [loading, setLoading] = useState(false);
-
+  const { auth } = useFirebase();
   const submit = () => {
     setLoading(true);
     auth.email
@@ -469,14 +473,13 @@ function SignUp({ navigation }) {
         });
       })
       .catch((e) => {
-        setLoading(false)
-        console.log(e)
+        setLoading(false);
+        console.log(e);
         Toast.show({
           type: "error",
           text1: "Error: " + e + ".",
         });
-      })
-    
+      });
   };
   return (
     <>

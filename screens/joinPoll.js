@@ -11,7 +11,8 @@ import {
 import { createStackNavigator } from "@react-navigation/stack";
 import { ActivityIndicator } from "react-native-paper";
 import Toast from "react-native-toast-message";
-import { db, auth } from "../firebase";
+// import { db, auth } from "../firebase";
+import { useFirebase } from "../firebase";
 import { BarCodeScanner } from "expo-barcode-scanner";
 import Content from "./components/content";
 import Modal from "./components/modal";
@@ -19,7 +20,16 @@ import { Feather } from "@expo/vector-icons";
 import appData from "./components/appData";
 import { useContext } from "react";
 
-function submitData(pollId, navigation, isQr, reload, setLoading, setScanned) {
+function submitData(
+  auth,
+  db,
+  pollId,
+  navigation,
+  isQr,
+  reload,
+  setLoading,
+  setScanned
+) {
   setLoading(true);
   db.read("/questions/" + pollId).then((data) => {
     if (data == null) {
@@ -30,11 +40,13 @@ function submitData(pollId, navigation, isQr, reload, setLoading, setScanned) {
       });
       setTimeout(() => {
         if (setScanned) {
-          setScanned(null)
+          setScanned(null);
         }
       }, 2000);
     } else {
-      db.read("users/" + auth.auth.currentUser.uid + "/hostedIds/"+pollId).then((data) => {
+      db.read(
+        "users/" + auth.auth.currentUser.uid + "/hostedIds/" + pollId
+      ).then((data) => {
         console.log(data);
         if (data != null) {
           setLoading(false);
@@ -44,7 +56,7 @@ function submitData(pollId, navigation, isQr, reload, setLoading, setScanned) {
           });
           setTimeout(() => {
             if (setScanned) {
-              setScanned(null)
+              setScanned(null);
             }
           }, 2000);
         } else {
@@ -53,7 +65,7 @@ function submitData(pollId, navigation, isQr, reload, setLoading, setScanned) {
             true
           )
             .then(() => {
-              setLoading(false)
+              setLoading(false);
               Toast.show({
                 type: "success",
                 text1: "Successfully joined Poll.",
@@ -66,7 +78,7 @@ function submitData(pollId, navigation, isQr, reload, setLoading, setScanned) {
               console.log(e);
             });
         }
-      })
+      });
     }
   });
   //todo handle incase submit data has error to remove loader
@@ -75,11 +87,12 @@ function Index({ navigation }) {
   const [joinId, setJoinID] = useState("");
   const [loading, setLoading] = useState(false);
   const { reload } = useContext(appData);
+  const { auth, db } = useFirebase();
 
   const disabled = joinId.length < 5;
 
   const Done = () => {
-    submitData(joinId, navigation, false, reload, setLoading);
+    submitData(auth, db, joinId, navigation, false, reload, setLoading);
   };
 
   return (
@@ -154,6 +167,7 @@ function Qr({ navigation }) {
   const [cameraLoad, setCameraLoad] = useState(false);
   const [loading, setLoading] = useState(false);
   const { reload } = useContext(appData);
+  const { auth, db } = useFirebase();
 
   useEffect(() => {
     (async () => {
@@ -172,6 +186,8 @@ function Qr({ navigation }) {
     ) {
       setScanned(data);
       submitData(
+        auth,
+        db,
         data.replace("greypoll://#id:", ""),
         navigation,
         true,

@@ -12,7 +12,8 @@ import {
 } from "react-native";
 import { RadioButton, ActivityIndicator } from "react-native-paper";
 import Toast from "react-native-toast-message";
-import { auth, db } from "../firebase";
+// import { auth, db } from "../firebase";
+import { useFirebase } from "../firebase";
 import shortid from "shortid";
 import Content from "./components/content";
 import Modal from "./components/modal";
@@ -20,7 +21,6 @@ import { Feather } from "@expo/vector-icons";
 import { createStackNavigator } from "@react-navigation/stack";
 import { useContext } from "react";
 import appData from "./components/appData";
-
 
 const ClickOption = ({ isActive = false, text, style, onPress }) => {
   return (
@@ -299,7 +299,7 @@ const Questions = ({ questions, setQuestions }) => {
   );
 };
 
-function submitData(pollData, navigation, setLoading, reload) {
+function submitData(auth, db, pollData, navigation, setLoading, reload) {
   const pollId = shortid.generate();
   db.write("questions/" + pollId, pollData)
     .then(() => {
@@ -314,7 +314,7 @@ function submitData(pollData, navigation, setLoading, reload) {
           });
           navigation.goBack();
           navigation.goBack();
-          reload()
+          reload();
         })
         .catch((e) => {
           console.log(e);
@@ -392,6 +392,7 @@ function QuestionsPage({ navigation, route }) {
     inputBox: new Animated.Value(0),
   });
   const { reload } = useContext(appData);
+  const { auth, db } = useFirebase();
   const { pollTitle } = route.params;
   const disabledQuestionBtn =
     questionInput.length < 5 ||
@@ -468,7 +469,7 @@ function QuestionsPage({ navigation, route }) {
       questionList: questions,
       title: pollTitle,
     };
-    submitData(pollData, navigation, setLoading, reload);
+    submitData(auth, db, pollData, navigation, setLoading, reload);
   };
   return (
     <Content style={{ justifyContent: "center", alignItems: "center" }}>
@@ -573,7 +574,7 @@ function QuestionsPage({ navigation, route }) {
 }
 
 export default function HostPoll({ route }) {
-  const {reload} = route.params
+  const { reload } = route.params;
   const Stack = createStackNavigator();
   const forFade = ({ current }) => ({
     cardStyle: {
@@ -603,7 +604,11 @@ export default function HostPoll({ route }) {
         },
       }}>
       <Stack.Screen name="page1" component={TitlePage} />
-      <Stack.Screen name="page2" component={QuestionsPage} initialParams={{reload: reload}} />
+      <Stack.Screen
+        name="page2"
+        component={QuestionsPage}
+        initialParams={{ reload: reload }}
+      />
     </Stack.Navigator>
   );
 }
