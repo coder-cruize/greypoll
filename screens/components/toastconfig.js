@@ -28,7 +28,7 @@ export const ToastConfig = {
     return <Component
       text={text1}
       icon={
-        <Ionicons name="ios-information-circle-outline" size={24} color="red" />
+        <Ionicons name="ios-information-circle-outline" size={24} color="orange" />
       }
     />;
   },

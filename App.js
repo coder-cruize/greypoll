@@ -24,13 +24,14 @@ import { ToastConfig } from "./screens/components/toastconfig";
 
 const Stack = createStackNavigator();
 export default function App() {
+  const [initialRender, setInitialRender] = useState(true)
   const [user, setUser] = useState(null);
   const [fontLoaded, setFontLoaded] = useState(false);
   const [reload, setReload] = useState(false);
   const [hosted, setHosted] = useState(null);
   const [joined, setJoined] = useState(null);
   const [polls, setPolls] = useState(null);
-  const { auth, db } = useFirebase();
+  const { auth, db, networkState } = useFirebase();
   useEffect(() => {
     auth.authState(auth.auth, (user) => {
       if (user) {
@@ -131,6 +132,20 @@ export default function App() {
       (async () => await SplashScreen.hideAsync())();
     }
   }, [fontLoaded, user, polls]);
+  useEffect(() => {
+    if (initialRender) {
+      setInitialRender(false)
+      return;
+    }
+  Toast.show({
+    type: "info",
+    text1: networkState ? "You're back online" : "No internet connection",
+  });
+  }, [networkState])
+  Toast.show({
+    type: "info",
+    text1: networkState ? "You're back online" : "No internet connection",
+  });
   const Reload = () => {
     setReload(!reload);
   };
