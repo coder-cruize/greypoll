@@ -141,13 +141,6 @@ export default function App() {
       text1: networkState ? "You're back online" : "No internet connection",
     });
   }, [networkState]);
-  Toast.show({
-    type: "info",
-    text1: networkState ? "You're back online" : "No internet connection",
-  });
-  const Reload = () => {
-    setReload(!reload);
-  };
   const AppTheme = {
     ...DefaultTheme,
     colors: {
