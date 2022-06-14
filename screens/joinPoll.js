@@ -11,7 +11,6 @@ import {
 import { createStackNavigator } from "@react-navigation/stack";
 import { ActivityIndicator } from "react-native-paper";
 import Toast from "react-native-toast-message";
-// import { db, auth } from "../firebase";
 import { useFirebase } from "../firebase";
 import { BarCodeScanner } from "expo-barcode-scanner";
 import Content from "./components/content";
@@ -47,7 +46,6 @@ function submitData(
       db.read(
         "users/" + auth.auth.currentUser.uid + "/hostedIds/" + pollId
       ).then((data) => {
-        console.log(data);
         if (data != null) {
           setLoading(false);
           Toast.show({
@@ -75,7 +73,10 @@ function submitData(
               reload();
             })
             .catch((e) => {
-              console.log(e);
+              Toast.show({
+                type: "info",
+                text1: e,
+              });
             });
         }
       });

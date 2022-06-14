@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Text,
   View,
@@ -7,7 +7,6 @@ import {
   Image,
   TextInput,
 } from "react-native";
-// import { auth, db } from "../firebase";
 import { useFirebase } from "../firebase";
 
 import Content from "./components/content";
@@ -427,7 +426,7 @@ function Login({ navigation }) {
         setLoading(false);
         Toast.show({
           type: "error",
-          text1: "Error: " + e + ".",
+          text1: e,
         });
       });
   };
@@ -474,10 +473,9 @@ function SignUp({ navigation }) {
       })
       .catch((e) => {
         setLoading(false);
-        console.log(e);
         Toast.show({
           type: "error",
-          text1: "Error: " + e + ".",
+          text1: e,
         });
       });
   };

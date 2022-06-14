@@ -24,7 +24,7 @@ import { ToastConfig } from "./screens/components/toastconfig";
 
 const Stack = createStackNavigator();
 export default function App() {
-  const [initialRender, setInitialRender] = useState(true)
+  const [initialRender, setInitialRender] = useState(true);
   const [user, setUser] = useState(null);
   const [fontLoaded, setFontLoaded] = useState(false);
   const [reload, setReload] = useState(false);
@@ -101,22 +101,21 @@ export default function App() {
     LogBox.ignoreLogs([
       "Non-serializable values were found in the navigation state",
     ]);
-    async function prepareAssets() {
-      await Font.loadAsync({
-        poppins: require("./assets/fonts/Poppins-SemiBold.ttf"),
-        montserratMid: require("./assets/fonts/Montserrat-Medium.ttf"),
-        montserrat: require("./assets/fonts/Montserrat-ExtraBold.ttf"),
-      });
-      setFontLoaded(true);
-    }
     (async () => {
       try {
         // Show the splash screen
         await SplashScreen.preventAutoHideAsync();
+        // load fonts
+        await Font.loadAsync({
+          poppins: require("./assets/fonts/Poppins-SemiBold.ttf"),
+          montserratMid: require("./assets/fonts/Montserrat-Medium.ttf"),
+          montserrat: require("./assets/fonts/Montserrat-ExtraBold.ttf"),
+        });
       } catch (e) {
-        console.warn(e);
+        console.log(e);
+      } finally {
+        setFontLoaded(true);
       }
-      await prepareAssets();
     })();
   }, []);
   useEffect(() => {
@@ -134,14 +133,14 @@ export default function App() {
   }, [fontLoaded, user, polls]);
   useEffect(() => {
     if (initialRender) {
-      setInitialRender(false)
+      setInitialRender(false);
       return;
     }
-  Toast.show({
-    type: "info",
-    text1: networkState ? "You're back online" : "No internet connection",
-  });
-  }, [networkState])
+    Toast.show({
+      type: "info",
+      text1: networkState ? "You're back online" : "No internet connection",
+    });
+  }, [networkState]);
   Toast.show({
     type: "info",
     text1: networkState ? "You're back online" : "No internet connection",
@@ -210,7 +209,6 @@ export default function App() {
           <Stack.Screen
             name="HostPoll"
             component={HostPoll}
-            initialParams={{ reload: Reload }}
             options={{
               headerShown: false,
               ...TransitionPresets.FadeFromBottomAndroid,

@@ -12,7 +12,6 @@ import {
 } from "react-native";
 import { RadioButton, ActivityIndicator } from "react-native-paper";
 import Toast from "react-native-toast-message";
-// import { auth, db } from "../firebase";
 import { useFirebase } from "../firebase";
 import shortid from "shortid";
 import Content from "./components/content";
@@ -317,7 +316,10 @@ function submitData(auth, db, pollData, navigation, setLoading, reload) {
           reload();
         })
         .catch((e) => {
-          console.log(e);
+          Toast.show({
+            type: "info",
+            text1: e,
+          });
         });
     })
     .catch(() => {
@@ -573,8 +575,7 @@ function QuestionsPage({ navigation, route }) {
   );
 }
 
-export default function HostPoll({ route }) {
-  const { reload } = route.params;
+export default function HostPoll() {
   const Stack = createStackNavigator();
   const forFade = ({ current }) => ({
     cardStyle: {
@@ -607,7 +608,6 @@ export default function HostPoll({ route }) {
       <Stack.Screen
         name="page2"
         component={QuestionsPage}
-        initialParams={{ reload: reload }}
       />
     </Stack.Navigator>
   );

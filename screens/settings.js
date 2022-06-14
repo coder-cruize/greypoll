@@ -1,7 +1,8 @@
 import { Text, View, Button } from "react-native";
-import { auth } from "../firebase";
+import { useFirebase } from "../firebase";
 
 export default function Settings({ navigation }) {
+  const { auth } = useFirebase();
   const signOut = () => {
     auth
       .signOut()

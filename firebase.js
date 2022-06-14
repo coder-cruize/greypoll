@@ -42,7 +42,7 @@ export function useFirebase() {
     read: function (path) {
       return new Promise((resolve, reject) => {
         if (!networkState)
-          reject("An error occured with your internet connection");
+          reject("Internet connection is not available");
         onValue(ref(database, path), (snapshot) => {
           resolve(snapshot.val());
         });
@@ -51,7 +51,7 @@ export function useFirebase() {
     write: function (path, data) {
       return new Promise((resolve, reject) => {
         if (!networkState)
-          reject("An error occured with your internet connection");
+          reject("Internet connection is not available");
         set(ref(database, path), data)
           .then(() => {
             resolve();
@@ -69,7 +69,7 @@ export function useFirebase() {
       signup: (name, email, password) => {
         return new Promise((resolve, reject) => {
           if (!networkState)
-            reject("An error occured with your internet connection");
+            reject("Internet connection is not available");
           createUserWithEmailAndPassword(authentication, email, password)
             .then((userCredential) => {
               updateProfile(userCredential.user, { displayName: name }).then(
@@ -86,7 +86,7 @@ export function useFirebase() {
       login: (email, password) => {
         return new Promise((resolve, reject) => {
           if (!networkState)
-            reject("An error occured with your internet connection");
+            reject("Internet connection is not available");
           signInWithEmailAndPassword(authentication, email, password)
             .then((userCredential) => {
               resolve(userCredential.user);
@@ -100,7 +100,7 @@ export function useFirebase() {
     signOut: () => {
       return new Promise((resolve, reject) => {
         if (!networkState)
-          reject("An error occured with your internet connection");
+          reject("Internet connection is not available");
         signOut(authentication)
           .then(resolve)
           .catch((error) => {
