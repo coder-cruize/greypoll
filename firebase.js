@@ -38,11 +38,14 @@ export function useFirebase() {
     return unsubscribe;
   }, []);
 
+  function capitalize(string) {
+    return string.charAt(0).toUpperCase() + string.slice(1);
+  }
+
   const db = {
     read: function (path) {
       return new Promise((resolve, reject) => {
-        if (!networkState)
-          reject("Internet connection is not available");
+        if (!networkState) reject("Internet connection is not available");
         onValue(ref(database, path), (snapshot) => {
           resolve(snapshot.val());
         });
@@ -50,8 +53,7 @@ export function useFirebase() {
     },
     write: function (path, data) {
       return new Promise((resolve, reject) => {
-        if (!networkState)
-          reject("Internet connection is not available");
+        if (!networkState) reject("Internet connection is not available");
         set(ref(database, path), data)
           .then(() => {
             resolve();
@@ -68,8 +70,7 @@ export function useFirebase() {
     email: {
       signup: (name, email, password) => {
         return new Promise((resolve, reject) => {
-          if (!networkState)
-            reject("Internet connection is not available");
+          if (!networkState) reject("Internet connection is not available");
           createUserWithEmailAndPassword(authentication, email, password)
             .then((userCredential) => {
               updateProfile(userCredential.user, { displayName: name }).then(
@@ -79,32 +80,30 @@ export function useFirebase() {
               );
             })
             .catch((error) => {
-              reject(error.code.slice(5).replace(/-/g, " "));
+              reject(capitalize(error.code.slice(5).replace(/-/g, " ")));
             });
         });
       },
       login: (email, password) => {
         return new Promise((resolve, reject) => {
-          if (!networkState)
-            reject("Internet connection is not available");
+          if (!networkState) reject("Internet connection is not available");
           signInWithEmailAndPassword(authentication, email, password)
             .then((userCredential) => {
               resolve(userCredential.user);
             })
             .catch((error) => {
-              reject(error.code.slice(5).replace(/-/g, " "));
+              reject(capitalize(error.code.slice(5).replace(/-/g, " ")));
             });
         });
       },
     },
     signOut: () => {
       return new Promise((resolve, reject) => {
-        if (!networkState)
-          reject("Internet connection is not available");
+        if (!networkState) reject("Internet connection is not available");
         signOut(authentication)
           .then(resolve)
           .catch((error) => {
-            reject(error);
+            reject(error.code);
           });
       });
     },

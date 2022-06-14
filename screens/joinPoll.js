@@ -82,7 +82,6 @@ function submitData(
       });
     }
   });
-  //todo handle incase submit data has error to remove loader
 }
 function Index({ navigation }) {
   const [joinId, setJoinID] = useState("");
