@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import {
   Text,
   View,
@@ -25,6 +25,8 @@ import AppIcon from "../assets/app-icon.png";
 import Google from "../assets/google.png";
 import Modal from "./components/modal";
 import { ActivityIndicator } from "react-native-paper";
+import Onboarding from "react-native-onboarding-swiper";
+import { svgImages } from "./components/svgs";
 const AuthTemplate = ({
   text,
   text2,
@@ -306,7 +308,23 @@ const AuthTemplate = ({
   );
 };
 function Info({ navigation }) {
+  const [onboardingEnded, hasOnboardingEnded] = useState(false);
+  const onboardingRef = useRef(null);
   const styles = StyleSheet.create({
+    onboardingTitle: {
+      width: "100%",
+      paddingHorizontal: 20,
+      fontFamily: "poppins",
+      fontSize: 30,
+      color: "#a5a5a5",
+    },
+    onboardingSubTitle: {
+      width: "100%",
+      paddingHorizontal: 20,
+      color: "#fff",
+      fontFamily: "montserratMid",
+      color: "#505050",
+    },
     topItems: {
       width: "75%",
       alignItems: "center",
@@ -351,6 +369,143 @@ function Info({ navigation }) {
       fontFamily: "montserratMid",
     },
   });
+  if (!onboardingEnded) {
+    const Pagination = ({ isLight, selected }) => {
+      let backgroundColor;
+      if (isLight) {
+        backgroundColor = selected
+          ? "rgba(0, 0, 0, 0.8)"
+          : "rgba(0, 0, 0, 0.3)";
+      } else {
+        backgroundColor = selected ? "#fff" : "rgba(255, 255, 255, 0.5)";
+      }
+      return (
+        <View
+          style={{
+            width: selected ? 20 : 6,
+            height: 6,
+            marginHorizontal: 3,
+            borderRadius: 10,
+            backgroundColor,
+          }}
+        />
+      );
+    };
+    return (
+      <Onboarding
+        ref={onboardingRef}
+        pages={[
+          {
+            backgroundColor: "transparent",
+            image: svgImages.onboardingCreate,
+            title: <Text style={styles.onboardingTitle}>Create</Text>,
+            subtitle: (
+              <View style={{ width: "100%" }}>
+                <Text style={styles.onboardingSubTitle}>
+                  Create and modify your polls in whichever way is suitable for
+                  you.
+                </Text>
+                <View
+                  style={{
+                    width: "100%",
+                    justifyContent: "center",
+                    alignItems: "center",
+                  }}>
+                  <TouchableOpacity
+                    onPress={() => onboardingRef.current.goNext()}
+                    style={{
+                      backgroundColor: "#726ec9",
+                      paddingHorizontal: 40,
+                      paddingVertical: 10,
+                      borderRadius: 10,
+                      marginTop: 30,
+                    }}>
+                    <Text style={{ color: "#bdbdbd" }}>Next</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            ),
+          },
+          {
+            backgroundColor: "transparent",
+            image: svgImages.onboardingShare,
+            title: <Text style={styles.onboardingTitle}>Share</Text>,
+            subtitle: (
+              <View style={{ width: "100%" }}>
+                <Text style={styles.onboardingSubTitle}>
+                  Share your polls to as many people as you want seamlessly with
+                  your unique poll id.
+                </Text>
+                <View
+                  style={{
+                    width: "100%",
+                    justifyContent: "center",
+                    alignItems: "center",
+                  }}>
+                  <TouchableOpacity
+                    onPress={() => onboardingRef.current.goNext()}
+                    style={{
+                      backgroundColor: "#36ae22",
+                      paddingHorizontal: 40,
+                      paddingVertical: 10,
+                      borderRadius: 10,
+                      marginTop: 30,
+                    }}>
+                    <Text style={{ color: "#bdbdbd" }}>Next</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            ),
+          },
+          {
+            backgroundColor: "transparent",
+            image: svgImages.onboardingFeedback,
+            title: <Text style={styles.onboardingTitle}>Feedback</Text>,
+            subtitle: (
+              <View style={{ width: "100%" }}>
+                <Text style={styles.onboardingSubTitle}>
+                  Get useful responses from users which you can use for your researches. 
+                </Text>
+                <View
+                  style={{
+                    width: "100%",
+                    justifyContent: "center",
+                    alignItems: "center",
+                  }}>
+                  <TouchableOpacity
+                    onPress={() => hasOnboardingEnded(true)}
+                    style={{
+                      backgroundColor: "#726ec9",
+                      paddingHorizontal: 40,
+                      paddingVertical: 10,
+                      borderRadius: 10,
+                      marginTop: 30,
+                    }}>
+                    <Text style={{ color: "#bdbdbd" }}>Done</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            ),
+          },
+        ]}
+        onSkip={() => {
+          hasOnboardingEnded(true);
+        }}
+        onDone={() => {
+          hasOnboardingEnded(true);
+        }}
+        DotComponent={Pagination}
+        bottomBarHighlight={false}
+        showNext={false}
+        showDone={false}
+        skipLabel={
+          <Text style={{ fontFamily: "montserratMid", color: "#505050" }}>
+            Skip
+          </Text>
+        }
+      />
+    );
+  }
   return (
     <View
       style={{
@@ -505,42 +660,42 @@ export default function OnBoarding({ navigation }) {
   const Stack = createStackNavigator();
 
   return (
-    <Content style={{ marginBottom: 20 }}>
-      <Stack.Navigator
-        screenOptions={() => ({
-          headerStyle: {
-            backgroundColor: "#1a1a1a",
-            elevation: 0,
-            shadowOpacity: 0,
-          },
-          cardStyleInterpolator: CardStyleInterpolators.forHorizontalIOS,
-          title: "",
-          headerLeft: () => (
-            <TouchableOpacity
-              style={{ marginLeft: 15, padding: 10 }}
-              onPress={() =>
-                navigation.reset({
-                  index: 0,
-                  routes: [{ name: "Info" }],
-                })
-              }>
-              <Feather name="x" size={24} color="#fff" />
-            </TouchableOpacity>
-          ),
-          headerTintColor: "#fff",
-          headerTitleStyle: { fontFamily: "poppins" },
-        })}>
-        <Stack.Screen
-          name="Info"
-          component={Info}
-          options={{
-            headerShown: false,
-            ...TransitionPresets.ModalFadeTransition,
-          }}
-        />
-        <Stack.Screen name="Login" component={Login} />
-        <Stack.Screen name="SignUp" component={SignUp} />
-      </Stack.Navigator>
-    </Content>
+    // <Content style={{ marginBottom: 20 }}>
+    <Stack.Navigator
+      screenOptions={() => ({
+        headerStyle: {
+          backgroundColor: "#1a1a1a",
+          elevation: 0,
+          shadowOpacity: 0,
+        },
+        cardStyleInterpolator: CardStyleInterpolators.forHorizontalIOS,
+        title: "",
+        headerLeft: () => (
+          <TouchableOpacity
+            style={{ marginLeft: 15, padding: 10 }}
+            onPress={() =>
+              navigation.reset({
+                index: 0,
+                routes: [{ name: "Info" }],
+              })
+            }>
+            <Feather name="x" size={24} color="#fff" />
+          </TouchableOpacity>
+        ),
+        headerTintColor: "#fff",
+        headerTitleStyle: { fontFamily: "poppins" },
+      })}>
+      <Stack.Screen
+        name="Info"
+        component={Info}
+        options={{
+          headerShown: false,
+          ...TransitionPresets.ModalFadeTransition,
+        }}
+      />
+      <Stack.Screen name="Login" component={Login} />
+      <Stack.Screen name="SignUp" component={SignUp} />
+    </Stack.Navigator>
+    // </Content>
   );
 }
