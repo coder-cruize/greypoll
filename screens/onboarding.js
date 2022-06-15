@@ -8,7 +8,6 @@ import {
   TextInput,
 } from "react-native";
 import { useFirebase } from "../firebase";
-
 import Content from "./components/content";
 import { validator } from "./components/validator";
 import {
@@ -169,6 +168,7 @@ const AuthTemplate = ({
                   onFocus={() => setWarning("name")}
                   onChangeText={name?.set}
                   value={name?.value}
+                  maxLength={15}
                   placeholder="Name"
                   keyboardType="default"
                   autoComplete="off"
@@ -317,11 +317,12 @@ function Info({ navigation }) {
       fontFamily: "poppins",
       fontSize: 30,
       color: "#a5a5a5",
+      textAlign: "center",
     },
     onboardingSubTitle: {
       width: "100%",
       paddingHorizontal: 20,
-      color: "#fff",
+      textAlign: "center",
       fontFamily: "montserratMid",
       color: "#505050",
     },
@@ -365,7 +366,6 @@ function Info({ navigation }) {
     subBtnText: {
       color: "#726EC9",
       marginLeft: 5,
-      textDecorationLine: "underline",
       fontFamily: "montserratMid",
     },
   });
@@ -464,7 +464,8 @@ function Info({ navigation }) {
             subtitle: (
               <View style={{ width: "100%" }}>
                 <Text style={styles.onboardingSubTitle}>
-                  Get useful responses from users which you can use for your researches. 
+                  Get useful responses from users which you can use for your
+                  researches.
                 </Text>
                 <View
                   style={{

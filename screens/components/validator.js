@@ -1,7 +1,7 @@
 export const validator = {
   length: (data) => {
     if (data == null) {
-      return false
+      return false;
     }
     if (data.length < 5 || /\s/.test(data)) {
       return false;
@@ -29,10 +29,14 @@ export const validator = {
   name: (data) => {
     if (data === undefined || data === null) {
       return true;
-    } else if (data.length < 3 || /\s/.test(data)) {
+    } else if (
+      data.length < 3 ||
+      /\s/.test(data) ||
+      !/^[a-zA-Z]*$/.test(data)
+    ) {
       return false;
     } else {
       return true;
     }
-  }
+  },
 };
