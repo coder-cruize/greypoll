@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useContext } from "react";
 import {
   Text,
   View,
@@ -26,6 +26,8 @@ import Modal from "./components/modal";
 import { ActivityIndicator } from "react-native-paper";
 import Onboarding from "react-native-onboarding-swiper";
 import { svgImages } from "./components/svgs";
+import appData from "./components/appData";
+
 const AuthTemplate = ({
   text,
   text2,
@@ -310,6 +312,7 @@ const AuthTemplate = ({
 function Info({ navigation }) {
   const [onboardingEnded, hasOnboardingEnded] = useState(false);
   const onboardingRef = useRef(null);
+  const { showOnboarding, setOnboarding } = useContext(appData);
   const styles = StyleSheet.create({
     onboardingTitle: {
       width: "100%",
@@ -369,7 +372,7 @@ function Info({ navigation }) {
       fontFamily: "montserratMid",
     },
   });
-  if (!onboardingEnded) {
+  if (!onboardingEnded && showOnboarding) {
     const Pagination = ({ isLight, selected }) => {
       let backgroundColor;
       if (isLight) {
@@ -390,6 +393,10 @@ function Info({ navigation }) {
           }}
         />
       );
+    };
+    const completeOnboarding = () => {
+      hasOnboardingEnded(true);
+      setOnboarding();
     };
     return (
       <Onboarding
@@ -474,7 +481,7 @@ function Info({ navigation }) {
                     alignItems: "center",
                   }}>
                   <TouchableOpacity
-                    onPress={() => hasOnboardingEnded(true)}
+                    onPress={completeOnboarding}
                     style={{
                       backgroundColor: "#726ec9",
                       paddingHorizontal: 40,
@@ -489,12 +496,7 @@ function Info({ navigation }) {
             ),
           },
         ]}
-        onSkip={() => {
-          hasOnboardingEnded(true);
-        }}
-        onDone={() => {
-          hasOnboardingEnded(true);
-        }}
+        onSkip={completeOnboarding}
         DotComponent={Pagination}
         bottomBarHighlight={false}
         showNext={false}
@@ -588,7 +590,7 @@ function Login({ navigation }) {
   };
 
   return (
-    <>
+    <Content style={{ marginBottom: 20 }}>
       <AuthTemplate
         text="Login"
         text2="Sign up"
@@ -604,7 +606,7 @@ function Login({ navigation }) {
           <ActivityIndicator size="large" color="#36ae22" />
         </View>
       </Modal>
-    </>
+    </Content>
   );
 }
 function SignUp({ navigation }) {
@@ -636,7 +638,7 @@ function SignUp({ navigation }) {
       });
   };
   return (
-    <>
+    <Content style={{ marginBottom: 20 }}>
       <AuthTemplate
         text="Sign up"
         text2="Log in"
@@ -653,7 +655,7 @@ function SignUp({ navigation }) {
           <ActivityIndicator size="large" color={"#726EC9"} />
         </View>
       </Modal>
-    </>
+    </Content>
   );
 }
 
@@ -661,7 +663,6 @@ export default function OnBoarding({ navigation }) {
   const Stack = createStackNavigator();
 
   return (
-    // <Content style={{ marginBottom: 20 }}>
     <Stack.Navigator
       screenOptions={() => ({
         headerStyle: {
@@ -697,6 +698,5 @@ export default function OnBoarding({ navigation }) {
       <Stack.Screen name="Login" component={Login} />
       <Stack.Screen name="SignUp" component={SignUp} />
     </Stack.Navigator>
-    // </Content>
   );
 }

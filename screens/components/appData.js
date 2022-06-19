@@ -2,5 +2,7 @@ import { createContext } from "react";
 
 export default createContext({
   polls: {},
-  reload: () => null
+  reload: () => null,
+  setOnboarding: () => null,
+  showOnboarding: false
 })

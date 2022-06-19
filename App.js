@@ -21,6 +21,7 @@ import Settings from "./screens/settings";
 import { navigationRef } from "./screens/components/navigate";
 import appData from "./screens/components/appData";
 import { ToastConfig } from "./screens/components/toastconfig";
+import * as SecureStore from "expo-secure-store";
 
 const Stack = createStackNavigator();
 export default function App() {
@@ -31,7 +32,19 @@ export default function App() {
   const [hosted, setHosted] = useState(null);
   const [joined, setJoined] = useState(null);
   const [polls, setPolls] = useState(null);
+  const [onboarding, showOnboarding] = useState(null);
   const { auth, db, networkState } = useFirebase();
+  const setOnboard = (newUser = false) => {
+    return new Promise((resolve, reject) => {
+      SecureStore.setItemAsync("showOnboarding", newUser ? "true" : "false")
+        .then(() => {
+          resolve();
+        })
+        .catch((e) => {
+          console.log(e);
+        });
+    });
+  };
   useEffect(() => {
     auth.authState(auth.auth, (user) => {
       if (user) {
@@ -111,6 +124,13 @@ export default function App() {
           montserratMid: require("./assets/fonts/Montserrat-Medium.ttf"),
           montserrat: require("./assets/fonts/Montserrat-ExtraBold.ttf"),
         });
+        const onboardValue = await SecureStore.getItemAsync("showOnboarding");
+        if (onboardValue == null) {
+          setOnboard(true);
+          showOnboarding(true);
+        } else {
+          showOnboarding(false);
+        }
       } catch (e) {
         console.log(e);
       } finally {
@@ -127,8 +147,10 @@ export default function App() {
     }
   }, [hosted, joined]);
   useEffect(() => {
-    if (fontLoaded && user != null && polls != null) {
-      (async () => await SplashScreen.hideAsync())();
+    if (fontLoaded && user != null && polls != null && onboarding != null) {
+      (async () => {
+        await SplashScreen.hideAsync();
+      })();
     }
   }, [fontLoaded, user, polls]);
   useEffect(() => {
@@ -152,9 +174,15 @@ export default function App() {
   if (!fontLoaded || user == null || polls == null) {
     return null;
   }
+
   return (
     <appData.Provider
-      value={{ polls: polls, reload: () => setReload(!reload) }}>
+      value={{
+        polls: polls,
+        reload: () => setReload(!reload),
+        showOnboarding: onboarding,
+        setOnboarding: setOnboard,
+      }}>
       <NavigationContainer ref={navigationRef} theme={AppTheme}>
         <StatusBar style="light" translucent={true} />
         <Stack.Navigator
