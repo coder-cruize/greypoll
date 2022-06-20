@@ -300,27 +300,34 @@ const Questions = ({ questions, setQuestions }) => {
 
 function submitData(auth, db, pollData, navigation, setLoading, reload) {
   const pollId = shortid.generate();
-  db.write("questions/" + pollId, pollData)
-    .then(() => {
-      db.write(
-        "users/" + auth.auth.currentUser.uid + "/hostedIds/" + pollId,
-        true
-      )
+  db.read("questions/"+ pollId).then((data) => {
+    if (data == null) {
+      db.write("questions/" + pollId, pollData)
         .then(() => {
-          Toast.show({
-            type: "success",
-            text1: "Successfully created Poll.",
-          });
-          navigation.goBack();
-          navigation.goBack();
-          reload();
+          db.write(
+            "users/" + auth.auth.currentUser.uid + "/hostedIds/" + pollId,
+            true
+          )
+            .then(() => {
+              Toast.show({
+                type: "success",
+                text1: "Successfully created Poll.",
+              });
+              navigation.goBack();
+              navigation.goBack();
+              reload();
+            })
+            .catch((e) => {
+              Toast.show({
+                type: "info",
+                text1: e,
+              });
+            });
         })
-        .catch((e) => {
-          Toast.show({
-            type: "info",
-            text1: e,
-          });
-        });
+    }
+    else {
+      submitData(auth, db, pollData, navigation, setLoading, reload);
+    }
     })
     .catch(() => {
       Toast.show({
