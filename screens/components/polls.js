@@ -1,7 +1,8 @@
-import { StyleSheet, Text, View, ImageBackground, TouchableHighlight, FlatList} from 'react-native';
+import { StyleSheet, Text, View, ImageBackground, TouchableHighlight, FlatList, TouchableOpacity} from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import * as navigation from './navigate'
 import EmptyPoll from './emptypoll';
+import { Octicons } from "@expo/vector-icons";
 
 function Tags({id, count, accent}) {
   return (
@@ -28,15 +29,32 @@ function Poll({data}) {
   );
 }
 
-export default function PollList({datalist, ishosting = false}) {
+export default function PollList({ datalist, ishosting = false }) {
+  const showCreateBtn = datalist?.length ? true : false;
   return (
-    <FlatList
-      contentContainerStyle={{flex: 1}}
-      data={datalist}
-      renderItem={({ item }) => <Poll data={item}/>}
-      keyExtractor={item => item.id}
-      ListEmptyComponent={<EmptyPoll ishosting={ishosting}/>}
-    />
+    <>
+      <FlatList
+        contentContainerStyle={{ flex: 1 }}
+        data={datalist}
+        renderItem={({ item }) => <Poll data={item} />}
+        keyExtractor={(item) => item.id}
+        ListEmptyComponent={<EmptyPoll ishosting={ishosting} />}
+      />
+      {showCreateBtn && <View style={{ position: "absolute", bottom: 30, left: 15 }}>
+        <TouchableOpacity
+          onPress={() => navigation.navigate("HostPoll")}
+          style={{
+            backgroundColor: "#3c3c3c",
+            width: 50,
+            height: 50,
+            borderRadius: 50,
+            justifyContent: "center",
+            alignItems: "center",
+          }}>
+          <Octicons name="plus" size={32} color="#888" />
+        </TouchableOpacity>
+      </View>}
+    </>
   );
 }
 

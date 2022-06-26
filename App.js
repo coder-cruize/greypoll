@@ -29,8 +29,6 @@ export default function App() {
   const [user, setUser] = useState(null);
   const [fontLoaded, setFontLoaded] = useState(false);
   const [reload, setReload] = useState(false);
-  const [hosted, setHosted] = useState(null);
-  const [joined, setJoined] = useState(null);
   const [polls, setPolls] = useState(null);
   const [onboarding, showOnboarding] = useState(null);
   const { auth, db, networkState } = useFirebase();
@@ -50,55 +48,61 @@ export default function App() {
       if (user) {
         db.read("users/" + user.uid)
           .then((userData) => {
+            let hosted = [];
+            let joined = [];
+            let hostedIds = []
+            let joinedIds = []
+            let hostedResolved = []
+            let joinedResolved = []
             Object.keys(userData?.hostedIds || {}).map((questionId) => {
-              db.read("questions/" + questionId).then((questions) => {
-                const data = {
-                  questions: questions.questionList,
-                  title: questions.title,
-                  id: questionId,
-                  count: 0,
-                  accent: "#0F4FD7",
-                  background:
-                    "https://64.media.tumblr.com/e334f432080b67cef944eeefca5302af/tumblr_oiwytwMDKF1tf8vylo1_1280.pnj",
-                };
-                if (hosted) {
-                  setHosted([...hosted, data]);
-                } else {
-                  setHosted([data]);
-                }
-              });
+              const question = db.read("questions/" + questionId);
+              hosted.push(question);
+              hostedIds.push(questionId)
             });
             Object.keys(userData?.joinedIds || {}).map((questionId) => {
-              db.read("questions/" + questionId).then((questions) => {
-                if (questions == null) {
-                  db.write(
-                    "users/" + user.uid + "/joinedIds/" + questionId,
-                    null
-                  ).then(() => {
-                    if (joined == null) {
-                      setJoined([]);
-                    }
-                  });
-                  return;
-                }
-                const data = {
-                  questions: questions.questionList,
-                  title: questions.title,
-                  id: questionId,
-                  count: 0,
-                  accent: "#0F4FD7",
-                  background:
-                    "https://64.media.tumblr.com/e334f432080b67cef944eeefca5302af/tumblr_oiwytwMDKF1tf8vylo1_1280.pnj",
-                };
-                if (hosted) {
-                  setJoined([...hosted, data]);
-                } else {
-                  setJoined([data]);
-                }
-              });
+              const question = db.read("questions/" + questionId);
+              joined.push(question);
+              joinedIds.push(questionId)
             });
-            if (!userData?.hostedIds) setHosted([]);
-            if (!userData?.joinedIds) setJoined([]);
+            Promise.all(
+              [
+                Promise.all(hosted).then((hostedQuestions) => {
+                  hostedQuestions.map((question, index) => {
+                    const data = {
+                      questions: question.questionList,
+                      title: question.title,
+                      id: hostedIds[index],
+                      count: 0,
+                      accent: "#0F4FD7",
+                      background:
+                        "https://64.media.tumblr.com/e334f432080b67cef944eeefca5302af/tumblr_oiwytwMDKF1tf8vylo1_1280.pnj",
+                    };
+                    hostedResolved.push(data)
+                  });
+                }),
+                Promise.all(joined).then((joinedQuestions) => {
+                  joinedQuestions.map((question, index) => {
+                    const data = {
+                      questions: question.questionList,
+                      title: question.title,
+                      id: joinedIds[index],
+                      count: 0,
+                      accent: "#0F4FD7",
+                      background:
+                        "https://64.media.tumblr.com/e334f432080b67cef944eeefca5302af/tumblr_oiwytwMDKF1tf8vylo1_1280.pnj",
+                    };
+                    joinedResolved.push(data);
+                  });
+                }),
+              ].map((p) => p.then(() => true).catch(() => false))
+            ).then((data) => {
+              if (data[0] == true && data[1] == true) {
+                 setPolls({
+                   hosted: hostedResolved,
+                   joined: joinedResolved,
+                 });
+              };
+            });
           })
           .then(() => {
             setUser(user);
@@ -139,14 +143,6 @@ export default function App() {
     })();
   }, []);
   useEffect(() => {
-    if (hosted && joined) {
-      setPolls({
-        hosted: hosted,
-        joined: joined,
-      });
-    }
-  }, [hosted, joined]);
-  useEffect(() => {
     if (fontLoaded && user != null && polls != null && onboarding != null) {
       (async () => {
         await SplashScreen.hideAsync();
@@ -174,7 +170,6 @@ export default function App() {
   if (!fontLoaded || user == null || polls == null) {
     return null;
   }
-
   return (
     <appData.Provider
       value={{
