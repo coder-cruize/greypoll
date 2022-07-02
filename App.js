@@ -82,25 +82,31 @@ export default function App() {
                 }),
                 Promise.all(joined).then((joinedQuestions) => {
                   joinedQuestions.map((question, index) => {
-                    const data = {
-                      questions: question.questionList,
-                      title: question.title,
-                      id: joinedIds[index],
-                      count: 0,
-                      accent: "#0F4FD7",
-                      background:
-                        "https://64.media.tumblr.com/e334f432080b67cef944eeefca5302af/tumblr_oiwytwMDKF1tf8vylo1_1280.pnj",
-                    };
-                    joinedResolved.push(data);
+                    if (question == null) {
+                      db.write("users/" + user.uid + "/joinedIds/" + joinedIds[index], null)
+                      return;
+                    }
+                    else {
+                      const data = {
+                        questions: question.questionList,
+                        title: question.title,
+                        id: joinedIds[index],
+                        count: 0,
+                        accent: "#0F4FD7",
+                        background:
+                          "https://64.media.tumblr.com/e334f432080b67cef944eeefca5302af/tumblr_oiwytwMDKF1tf8vylo1_1280.pnj",
+                      };
+                      joinedResolved.push(data);
+                    }
                   });
                 }),
               ].map((p) => p.then(() => true).catch(() => false))
             ).then((data) => {
               if (data[0] == true && data[1] == true) {
-                 setPolls({
-                   hosted: hostedResolved,
-                   joined: joinedResolved,
-                 });
+                setPolls({
+                  hosted: hostedResolved,
+                  joined: joinedResolved,
+                });
               };
             });
           })
