@@ -18,9 +18,9 @@ function Tags({id, count, accent}) {
     </View>
   )
 }
-function Poll({data}) {
+function Poll({ data, ishosting }) {
   return (
-    <TouchableHighlight onPress={() => navigation.navigate('Vote', data)} style={{backgroundColor: 'transparent', marginBottom: 15}}>
+    <TouchableHighlight onPress={() => navigation.navigate('Vote', {data: data, hosting: ishosting})} style={{backgroundColor: 'transparent', marginBottom: 15}}>
       <ImageBackground source={{uri: data.background}} resizeMode="cover" style={styles.pollContainer} imageStyle={{borderRadius: 15}}>
         <Tags id={data.id} count={data.count} accent={data.accent} />
         <Text style={styles.text}>{data.title}</Text>
@@ -36,13 +36,13 @@ export default function PollList({ datalist, ishosting = false }) {
       <FlatList
         contentContainerStyle={{ flex: 1 }}
         data={datalist}
-        renderItem={({ item }) => <Poll data={item} />}
+        renderItem={({ item }) => <Poll data={item} ishosting={ishosting} />}
         keyExtractor={(item) => item.id}
         ListEmptyComponent={<EmptyPoll ishosting={ishosting} />}
       />
       {showCreateBtn && <View style={{ position: "absolute", bottom: 30, left: 15 }}>
         <TouchableOpacity
-          onPress={() => navigation.navigate("HostPoll")}
+          onPress={() => navigation.navigate(ishosting ? "HostPoll" : "JoinPoll")}
           style={{
             backgroundColor: "#3c3c3c",
             width: 50,
