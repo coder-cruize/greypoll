@@ -122,7 +122,7 @@ function Index({ navigation }) {
           <TextInput
             style={styles.input}
             onChangeText={(text) =>
-              setJoinID(text.replace(/[^A-Za-z0-9]/g, ""))
+              setJoinID(text.replace(/[^A-Za-z0-9-]/g, ""))
             }
             value={joinId}
             placeholder="Poll ID"
