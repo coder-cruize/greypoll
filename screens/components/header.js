@@ -21,22 +21,42 @@ function PollOptions({ close, pollId, setBackButton, isHosting }) {
   const { db, auth } = useFirebase();
   const { reload } = useContext(appData);
   const [loading, setLoading] = useState(false);
+  const [closeLoading, setCloseLoading] = useState(false);
   const leavePoll = () => {
     setBackButton(true);
-    setLoading(true);
-    db.write(
-      "users/" + auth.auth.currentUser.uid + "/joinedIds/" + pollId,
-      null
-    )
-      .then(() => {
-        close();
-        navigation.goBack();
-        reload();
-      })
-      .catch((e) => {
-        setBackButton(false);
-        setLoading(false);
+    if (isHosting) {
+      setCloseLoading(true);
+      db.write("questions/" + pollId, null).then(() => {
+        db.write(
+          "users/" + auth.auth.currentUser.uid + "/hostedIds/" + pollId,
+          null
+        )
+          .then(() => {
+            close();
+            navigation.goBack();
+            reload();
+          })
+          .catch(() => {
+            setBackButton(false);
+            setCloseLoading(false);
+          });
       });
+    } else {
+      setLoading(true);
+      db.write(
+        "users/" + auth.auth.currentUser.uid + "/joinedIds/" + pollId,
+        null
+      )
+        .then(() => {
+          close();
+          navigation.goBack();
+          reload();
+        })
+        .catch((e) => {
+          setBackButton(false);
+          setLoading(false);
+        });
+    }
   };
   const savePollData = () => {
     alert();
@@ -61,7 +81,7 @@ function PollOptions({ close, pollId, setBackButton, isHosting }) {
         </Text>
         <TouchableOpacity
           style={{ paddingVertical: 10 }}
-          onPress={loading ? null : close}>
+          onPress={loading || closeLoading ? null : close}>
           <Ionicons name="close" size={28} color="black" />
         </TouchableOpacity>
       </View>
@@ -94,6 +114,7 @@ function PollOptions({ close, pollId, setBackButton, isHosting }) {
                   flexDirection: "row",
                   alignItems: "center",
                   backgroundColor: "#36ae22",
+                  opacity: closeLoading ? 0.7 : 1,
                   paddingVertical: 10,
                   paddingHorizontal: 35,
                   borderRadius: 50,
@@ -117,7 +138,7 @@ function PollOptions({ close, pollId, setBackButton, isHosting }) {
           </TouchableOpacity>
         )}
         <TouchableOpacity onPress={leavePoll}>
-          {loading ? (
+          {closeLoading ? (
             <ActivityIndicator style={{ marginLeft: 5 }} />
           ) : (
             <View style={{ flexDirection: "row", alignItems: "center" }}>
