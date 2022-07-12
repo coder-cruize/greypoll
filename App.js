@@ -72,7 +72,7 @@ export default function App() {
                       questions: question.questionList,
                       title: question.title,
                       id: hostedIds[index],
-                      count: 0,
+                      responses: Object.keys(question.responses).length,
                       accent: "#0F4FD7",
                       background:
                         "https://64.media.tumblr.com/e334f432080b67cef944eeefca5302af/tumblr_oiwytwMDKF1tf8vylo1_1280.pnj",
@@ -91,7 +91,6 @@ export default function App() {
                         questions: question.questionList,
                         title: question.title,
                         id: joinedIds[index],
-                        count: 0,
                         accent: "#0F4FD7",
                         background:
                           "https://64.media.tumblr.com/e334f432080b67cef944eeefca5302af/tumblr_oiwytwMDKF1tf8vylo1_1280.pnj",
